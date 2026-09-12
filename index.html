@@ -97,8 +97,10 @@
   .corner{flex-direction:column;gap:.22em}
   .t-in {left:4.4%; top:17.5%;width:14%;height:7.5%}
   .t-out{left:auto;right:4.4%;top:17.5%;width:14%;height:7.5%}
-  .corner .lbl{font-family:var(--type);font-size:clamp(18px,1.72cqw,66px);letter-spacing:.08em}
-  .corner .val{font-family:var(--type);font-size:clamp(17px,1.67cqw,64px);letter-spacing:.03em}
+  /* em-based children so fitText() can shrink the whole corner ("CHECKING OUT" is the widest case) */
+  .corner{font-size:clamp(18px,1.72cqw,66px);font-family:var(--type)}
+  .corner .lbl{font-size:1em;letter-spacing:.08em;white-space:nowrap}
+  .corner .val{font-size:.94em;letter-spacing:.03em;white-space:nowrap}
   .t-msg{left:28.5%;top:42.4%;width:43%;height:9.4%;font-family:var(--type);
          letter-spacing:.05em;font-size:clamp(14px,1.05vw,26px);text-transform:uppercase}
 
@@ -950,6 +952,8 @@
     }
     inEl.parentElement.style.visibility='visible';
     outEl.parentElement.style.visibility='visible';
+    fitText(inEl.parentElement,12);
+    fitText(outEl.parentElement,12);
     var msgEl=document.getElementById('ovMsg');
     msgEl.textContent=(c.property&&c.property.welcomeMessage)||'';
     fitText(msgEl,12);
