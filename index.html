@@ -453,6 +453,7 @@
     wireModal();
     if(setupMode)initSetup();
     else{
+      lockHomeHistory();
       var pm=(location.search.match(/[?&]panel=([a-z]+)/i)||[])[1];
       if(pm){var pp=PANELS.filter(function(x){return x.key===pm;})[0]; if(pp)openModal(pp,null);}
     }
@@ -1359,6 +1360,27 @@
     return key==='Escape'||key==='Esc'||key==='Backspace'||key==='GoBack'||
       key==='BrowserBack'||key==='AndroidBack'||code===4||code===8||code===27;
   }
+
+  function lockHomeHistory(){
+    try{
+      history.replaceState({sshHome:true},'',location.href);
+      history.pushState({sshHome:true},'',location.href);
+    }catch(e){}
+    window.addEventListener('popstate',function(){
+      try{history.pushState({sshHome:true},'',location.href);}catch(err){}
+      goHomeScreen();
+    });
+  }
+
+  function goHomeScreen(){
+    if(setupMode)return;
+    closeModal();
+    if(window.fully&&typeof window.fully.loadStartURL==='function'){
+      var start=String(window.fully.getStartUrl&&window.fully.getStartUrl()||'').split('#')[0];
+      var here=String(location.href).split('#')[0];
+      if(start&&here.indexOf(start)!==0)window.fully.loadStartURL();
+    }
+  }
   function isCenterKey(e){
     var key=e.key||'';
     var code=keyNumber(e);
@@ -1371,8 +1393,10 @@
       trapModalTab(e);
       return;
     }
-    if(open&&isBackKey(e)){
-      closeModal(); e.preventDefault(); return;
+    if(isBackKey(e)){
+      goHomeScreen();
+      e.preventDefault();
+      return;
     }
     if(isCenterKey(e)){
       var active=document.activeElement;
