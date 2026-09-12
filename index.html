@@ -23,7 +23,7 @@
     --green:#0A5E2E;
     --awning:#247D57;
     --coral:#FD3B35;
-    --pencil:#6E6875;
+    --pencil:#4B4459;
     --script:'Themysion','Brush Script MT',cursive;
     --type:'Special Elite','Courier New',monospace;
     --sans:'Inter',Avenir,'Segoe UI',Arial,sans-serif;
@@ -69,17 +69,23 @@
          padding:clamp(14px,1.15vw,24px) clamp(16px,1.3vw,28px);
          box-sizing:border-box}
   .cloud-wx{left:26.5%} .cloud-ci{left:42.3%} .cloud-qr{left:57.9%}
-  .cloud-art{width:48%;height:auto;object-fit:contain;pointer-events:none;flex:0 0 auto}
-  .cloud-cap{font-family:var(--type);color:var(--green);font-size:clamp(12px,.7vw,18px);margin-top:.08em}
-  .cloud-cap .wx-cond{display:block;font-size:.62em;line-height:1.05;margin-top:.12em;white-space:nowrap}
-  .cloud-awn{width:56%;height:auto;margin-bottom:.1em;pointer-events:none;flex:0 0 auto}
-  .cloud-times{display:flex;justify-content:center;gap:4%;width:100%;font-family:var(--type);font-size:clamp(10px,.55vw,13px);line-height:1.08}
-  .cloud-times .ci-col{display:flex;flex-direction:column;align-items:center;white-space:nowrap}
-  .cloud-times .ci-time{margin-top:.06em}
-  .cloud-qr{padding-top:clamp(20px,1.5vw,30px)}
-  .cloud-qrlbl{font-family:var(--type);font-size:clamp(8px,.46vw,11px);letter-spacing:.02em;
-               margin:0 0 .2em;line-height:1.12;max-width:92%;text-wrap:balance}
-  .cloud-qr-box{width:46%;aspect-ratio:1;background:#fff;line-height:0;flex:0 0 auto}
+  /* TV floor: the Shield renders this stage at 960 CSS px (2x), so 12px here is 24 device px */
+  .cloud-art{width:42%;height:auto;object-fit:contain;pointer-events:none;flex:0 0 auto}
+  .cloud-art[hidden]{display:none}
+  .wx-svg{width:44%;height:auto;overflow:visible}
+  .wx-svg .ink{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .wx-svg .sun{fill:none;stroke:var(--awning);stroke-width:2.6;stroke-linecap:round}
+  .cloud-cap{font-family:var(--type);color:var(--green);font-size:clamp(13px,1.4cqw,28px);margin-top:.1em;line-height:1}
+  .cloud-cap .wx-cond{display:block;font-size:clamp(12px,1.25cqw,26px);line-height:1.1;margin-top:.2em;white-space:nowrap}
+  .cloud-awn{width:50%;height:auto;margin-bottom:.35em;pointer-events:none;flex:0 0 auto}
+  .cloud-times{display:flex;flex-direction:column;align-items:center;gap:.22em;width:100%;
+               font-family:var(--type);font-size:clamp(12px,1.25cqw,26px);line-height:1.1}
+  .cloud-times .ci-row{display:flex;align-items:baseline;gap:.6em;white-space:nowrap}
+  .cloud-times .ci-time{color:var(--green)}
+  .cloud-qr{padding-top:clamp(16px,1.7cqw,34px);padding-bottom:clamp(12px,1.3cqw,26px)}
+  .cloud-qrlbl{font-family:var(--type);font-size:clamp(12px,1.25cqw,26px);letter-spacing:.02em;
+               margin:0 0 .3em;line-height:1.1;white-space:nowrap}
+  .cloud-qr-box{width:50%;aspect-ratio:1;background:#fff;line-height:0;flex:0 0 auto}
   .cloud-qr-box canvas,.cloud-qr-box img{width:100%!important;height:100%!important;display:block}
 
   /* live text in her real fonts, sitting straight on the lavender */
@@ -103,8 +109,10 @@
   .tile .lb{font-family:var(--type);font-weight:bold;font-size:clamp(16px,1.2cqw,46px);
             letter-spacing:.01em;white-space:pre-line;color:var(--ink);
             text-transform:uppercase;line-height:1.08}
-  /* focus ring wraps the WHOLE tile (icon + label below it), not just the icon */
-  .tile:focus{outline:none;border-radius:14px;box-shadow:0 0 0 3px var(--paper),0 0 0 7px var(--ink)}
+  /* focus ring wraps the WHOLE tile (icon + label below it) with breathing room around the label */
+  .tile::after{content:"";position:absolute;inset:-8px -8px -6px;border-radius:16px;pointer-events:none}
+  .tile:focus{outline:none}
+  .tile:focus::after{box-shadow:0 0 0 3px var(--paper),0 0 0 7px var(--ink)}
 
   /* debug: append ?debug to outline the live-text boxes + tile icons */
   body.debug .t{outline:1.5px dashed rgba(0,110,255,.8)}
@@ -129,39 +137,60 @@
   #modalBody{
     max-height:calc(90vh - 5px); overflow:auto;
     padding:var(--modal-pad) clamp(92px,8.6vmin,184px);
-    scrollbar-gutter:stable; scroll-padding-block:var(--modal-pad);
+    scrollbar-gutter:stable; scroll-padding-block:var(--modal-pad); scroll-behavior:smooth;
   }
   .modal-card::before{
-    content:""; position:absolute; inset:10px;
+    content:""; position:absolute; inset:10px; z-index:3;
     border:1.6px dashed rgba(253,59,53,.5); border-radius:10px; pointer-events:none;
   }
+  /* scroll cues: text fades out at the card edges instead of being sliced, and a
+     chevron says "more below" because Android hides the scrollbar on the TV */
+  .modal-fade{
+    position:absolute; left:4px; right:4px; height:clamp(34px,7vmin,80px); z-index:2;
+    pointer-events:none; opacity:0; transition:opacity .2s ease;
+  }
+  .modal-fade.top{ top:4px; border-radius:14px 14px 0 0; background:linear-gradient(var(--ground) 30%,rgba(245,234,246,0)); }
+  .modal-fade.bottom{
+    bottom:4px; border-radius:0 0 14px 14px; background:linear-gradient(rgba(245,234,246,0),var(--ground) 70%);
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:clamp(12px,2vmin,22px);
+  }
+  .modal-fade.bottom::after{
+    content:""; width:clamp(10px,1.3vmin,18px); height:clamp(10px,1.3vmin,18px);
+    border-right:3px solid var(--ink); border-bottom:3px solid var(--ink); transform:rotate(45deg);
+    animation:ssh-nudge 1.6s ease-in-out infinite;
+  }
+  @keyframes ssh-nudge{0%,100%{translate:0 0}50%{translate:0 4px}}
+  .modal-card.can-up .modal-fade.top,.modal-card.can-down .modal-fade.bottom{opacity:1}
   .modal-close{display:none}
   .service-btn:focus{ outline:none; box-shadow:0 0 0 4px var(--paper),0 0 0 9px var(--ink); }
 
-  /* Places to Eat: the HTML header (kicker + script title + table art) + picks beside it */
-  .places2{ display:grid; grid-template-columns:minmax(0,.62fr) minmax(0,1.38fr); gap:clamp(14px,2.6vmin,38px); align-items:start; }
+  /* Places to Eat: her section header (kicker + script title + table art) as a header row,
+     with the picks in the same two-column list as the other guide pages */
+  .places2-head{ display:flex; align-items:center; gap:clamp(14px,2.4vmin,34px); text-align:left; margin:0 0 clamp(10px,1.6vmin,24px); }
 
-  /* content pages (Lake Conroe, Local Favorites) */
+  /* content pages: every panel title is her script, thickened slightly for the TV */
   .modal-card h2{
     margin:0 0 clamp(4px,1vmin,12px); font-weight:400;
     font-family:var(--script); text-transform:none; letter-spacing:0;
-    font-size:clamp(34px,5vmin,132px); line-height:1; color:var(--ink);
+    font-size:clamp(44px,5.4vmin,132px); line-height:1; color:var(--ink);
+    -webkit-text-stroke:.35px currentColor; paint-order:stroke fill;
   }
   .modal-card .lede{ font-family:var(--sans); color:var(--pencil); font-size:clamp(16px,1.7vmin,40px); margin:0 0 clamp(10px,1.8vmin,40px); }
   .guide{ list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px); }
   .guide li{ position:relative; padding:0 0 clamp(7px,1.1vmin,12px); border-bottom:1.5px dashed rgba(40,15,145,.22); }
-  .guide b{ font-family:var(--sans); font-weight:700; color:var(--ink); font-size:clamp(18px,1.85vmin,44px); }
-  .guide .drive{ float:right; font-style:normal; font-family:var(--type); color:var(--green); font-size:clamp(13px,1.3vmin,32px); margin-left:8px; }
+  .guide .gh{ display:flex; align-items:baseline; gap:10px; }
+  .guide b{ flex:1 1 auto; min-width:0; font-family:var(--sans); font-weight:700; color:var(--ink); font-size:clamp(18px,1.85vmin,44px); line-height:1.2; }
+  .guide .drive{ flex:0 0 auto; white-space:nowrap; font-style:normal; font-family:var(--type); color:var(--green); font-size:clamp(13px,1.3vmin,32px); }
   .guide span{ display:block; font-family:var(--sans); color:var(--pencil); font-size:clamp(16px,1.7vmin,36px); line-height:1.35; margin-top:.15em; }
+  .map-row{ display:flex; align-items:center; gap:clamp(14px,2.4vmin,34px); margin-top:clamp(10px,1.6vmin,24px); }
+  .map-row .lede{ margin:0; }
 
   /* WiFi panel = her scan-to-connect section, rebuilt in HTML */
   .wifi{position:relative;text-align:center;padding:clamp(6px,1.5vmin,18px) 0}
   .wifi-deco{position:absolute;top:0;height:100%;width:auto;pointer-events:none;
              clip-path:polygon(18% 0,100% 0,100% 100%,0 100%,0 9%,18% 9%)}
   .wifi-deco-l{left:0} .wifi-deco-r{right:0;transform:scaleX(-1)}
-  .wifi-title{font-family:var(--type)!important;text-transform:uppercase;letter-spacing:.12em;
-              font-weight:400!important;font-size:clamp(22px,2.6vmin,68px)!important;color:var(--ink)!important;
-              margin:0 0 clamp(12px,2vmin,22px)!important}
+  .wifi-title{text-align:center;margin:0 0 clamp(12px,2vmin,22px)!important}
   .wifi-qr{width:clamp(180px,30vmin,640px);aspect-ratio:1;margin:0 auto;background:#fff;
            padding:clamp(8px,1.4vmin,16px);border-radius:8px;line-height:0}
   .wifi-qr canvas,.wifi-qr img{width:100%!important;height:100%!important;display:block}
@@ -169,44 +198,37 @@
              color:var(--ink);margin:clamp(8px,1.4vmin,16px) 0 0;overflow-wrap:anywhere}
 
   /* Legend panel = her story section, rebuilt in HTML */
-  .legend-title{font-family:var(--script)!important;font-weight:400!important;text-align:center;
-                font-size:clamp(34px,5.4vmin,132px)!important;color:var(--ink)!important;
-                margin:0 0 clamp(10px,2vmin,22px)!important;line-height:1}
+  .legend-title{text-align:center;margin:0 0 clamp(10px,2vmin,22px)!important}
   .legend-house{float:left;width:clamp(86px,11vmin,300px);height:auto;
                 margin:.2em clamp(12px,2vmin,22px) .4em 0;shape-outside:margin-box}
   .legend-p{font-family:var(--sans);color:var(--ink);font-size:clamp(16px,1.8vmin,36px);
             line-height:1.42;margin:0 0 clamp(8px,1.3vmin,28px)}
   .legend-q{font-family:var(--script);text-align:center;color:var(--awning);clear:both;
-            font-size:clamp(22px,3vmin,68px);line-height:1.1;margin:clamp(8px,1.4vmin,32px) 0}
+            font-size:clamp(30px,3.8vmin,76px);line-height:1.1;margin:clamp(8px,1.4vmin,32px) 0;
+            -webkit-text-stroke:.35px currentColor;paint-order:stroke fill}
 
   /* Places-to-Eat header = her section header, rebuilt in HTML */
-  .places2-head{text-align:center}
   .places-kicker{font-family:var(--type);text-transform:uppercase;letter-spacing:.22em;
-                 font-size:clamp(14px,1.4vmin,32px);color:var(--ink);margin:0}
-  .places-title{font-family:var(--script)!important;font-weight:400!important;color:var(--ink)!important;
-                font-size:clamp(34px,5.8vmin,128px)!important;line-height:.95;margin:.1em 0 .35em!important}
-  .places-art{width:min(100%,clamp(300px,27.8vmin,600px));height:auto;display:block;margin:0 auto}
+                 font-size:clamp(14px,1.4vmin,32px);color:var(--ink);margin:0 0 .2em}
+  .places-title{margin:0!important}
+  .places-art{height:clamp(72px,9.5vmin,180px);width:auto;display:block;flex:0 0 auto}
 
-  /* Streaming app launcher */
+  /* Streaming app launcher: each button carries the service's brand colour as a dot */
   .stream-lede{ font-family:var(--sans); font-size:clamp(16px,1.7vmin,40px); margin:0 0 clamp(12px,2vmin,40px); }
   .service-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(8px,1.2vmin,14px); }
   .service-btn{
+    display:flex; align-items:center; justify-content:center; gap:.55em;
     min-height:clamp(50px,5.7vmin,136px); padding:10px 12px;
     color:var(--ink); background:#fff; border:1.8px solid var(--ink); border-radius:10px;
     font-size:clamp(16px,1.4vmin,36px); letter-spacing:.06em; cursor:pointer;
   }
+  .service-btn .dot{ flex:0 0 auto; width:.7em; height:.7em; border-radius:50%; background:var(--brand,var(--ink)); box-shadow:inset 0 0 0 1px rgba(40,15,145,.18); }
 
   .local-qr{
-    width:clamp(150px,20vmin,420px); padding:12px; background:#fff;
+    flex:0 0 auto; width:clamp(130px,17vmin,340px); padding:10px; background:#fff;
     border:1.6px solid rgba(40,15,145,.3); border-radius:12px; line-height:0;
   }
   .local-qr canvas,.local-qr img{width:100%!important;height:auto!important;display:block}
-  .map-url{
-    max-width:min(100%,900px);margin-top:clamp(10px,1.4vmin,18px);
-    color:var(--ink);font-family:var(--sans);font-size:clamp(16px,1.55vmin,34px);
-    line-height:1.35;overflow-wrap:anywhere;user-select:text;
-  }
-  .map-url strong{font-weight:700}
   .qr-error{
     display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:72px;
     padding:10px;color:var(--ink);background:var(--paper);font-family:var(--sans);
@@ -272,12 +294,11 @@
   /* the welcome screen stays a centered 16:9 stage everywhere; only the modal
      content reflows to one column on narrow phones */
   @media (max-width:900px){
-    .places2{grid-template-columns:1fr}
     .guide{grid-template-columns:1fr}
     .service-grid{grid-template-columns:1fr 1fr}
     .modal-card{width:94vw}
     .legend-house{width:84px}
-    .places-art{width:min(100%,220px)}
+    .places2-head,.map-row{flex-direction:column;align-items:flex-start}
   }
   @media (max-width:760px){
     .awn-l,.awn-r{top:5%;width:11%;height:8%}
@@ -304,7 +325,8 @@
 
     <!-- three cloud boxes along the bottom: doodle-frame border + content nested inside -->
     <div class="cloud cloud-wx">
-      <img class="cloud-art" src="assets/art/weather-doodle.png" alt="">
+      <img class="cloud-art" id="wxDoodle" src="assets/art/weather-doodle.png" alt="">
+      <svg class="cloud-art wx-svg" id="wxIcon" viewBox="0 0 64 48" aria-hidden="true" hidden></svg>
       <div class="cloud-cap" id="ovWx"><span class="wx-temp">--&deg;</span><span class="wx-cond"></span></div>
     </div>
     <div class="cloud cloud-ci">
@@ -312,7 +334,7 @@
       <div class="cloud-times" id="ovCi"></div>
     </div>
     <div class="cloud cloud-qr">
-      <div class="cloud-qrlbl">SCAN TO CONNECT<br>TO WIFI</div>
+      <div class="cloud-qrlbl">SCAN FOR WIFI</div>
       <div class="cloud-qr-box qr" id="mainQR"></div>
     </div>
 
@@ -323,8 +345,8 @@
         <text class="greet-text" text-anchor="middle"><textPath id="ovName" href="#greetArc" startOffset="50%"></textPath></text>
       </svg>
     </div>
-    <div class="t corner t-in"><span class="lbl">CHECKING IN</span><span class="val" id="ovIn"></span></div>
-    <div class="t corner t-out"><span class="lbl">CHECKING OUT</span><span class="val" id="ovOut"></span></div>
+    <div class="t corner t-in"><span class="lbl" id="ovInLbl">CHECKING IN</span><span class="val" id="ovIn"></span></div>
+    <div class="t corner t-out"><span class="lbl" id="ovOutLbl">CHECKING OUT</span><span class="val" id="ovOut"></span></div>
     <div class="t t-msg" id="ovMsg"></div>
 
     <!-- tiles injected here -->
@@ -335,6 +357,8 @@
   <div class="modal-card">
     <button class="modal-close" id="modalClose" type="button" tabindex="-1" hidden aria-label="Close">&times;</button>
     <div id="modalBody"></div>
+    <div class="modal-fade top" aria-hidden="true"></div>
+    <div class="modal-fade bottom" aria-hidden="true"></div>
   </div>
 </div>
 
@@ -426,7 +450,7 @@
   /* Each tile is one of her drawn snapshot buttons: art icon + label, placed by
      measured left%. Order matches her welcome art, left to right. No tile is
      focused on load (James 2026-06-14: the screen shouldn't default to anything);
-     the first D-pad press focuses the first tile. tileLabel is the exact
+     the first D-pad press lands on the Streaming tile. tileLabel is the exact
      wording on her art (e.g. "FOOD AND BEVERAGE", not "&"). */
   var PANELS=[
     {key:'about',    label:'About the Place', tileLabel:'ABOUT THE\nPLACE',  icon:'tile-about.png',           left:19.8, build:buildLegendPage},
@@ -883,6 +907,7 @@
       var b=document.createElement('button');
       b.className='tile';
       b.setAttribute('aria-label',panel.label);
+      b.setAttribute('data-key',panel.key);
       b.style.left=panel.left+'%';
       b.innerHTML='<img class="ic" src="assets/art/'+panel.icon+'" alt="">'+
                   '<span class="lb">'+esc(panel.tileLabel||panel.label)+'</span>';
@@ -905,10 +930,21 @@
     fitGreeting();
     var ci=parseDay(c.guest&&c.guest.checkIn), co=parseDay(c.guest&&c.guest.checkOut);
     var inEl=document.getElementById('ovIn'),outEl=document.getElementById('ovOut');
-    inEl.textContent=ci?fmtDay(ci,true):'';
-    outEl.textContent=co?fmtDay(co,true):'';
-    inEl.parentElement.style.visibility=ci?'visible':'hidden';
-    outEl.parentElement.style.visibility=co?'visible':'hidden';
+    var inLbl=document.getElementById('ovInLbl'),outLbl=document.getElementById('ovOutLbl');
+    clockMode=!(ci&&co);
+    if(clockMode){
+      /* no stay entered: the awning corners carry today's date and the local time instead of sitting empty */
+      inLbl.textContent='TODAY';
+      outLbl.textContent='LOCAL TIME';
+      updateClock();
+    }else{
+      inLbl.textContent='CHECKING IN';
+      outLbl.textContent='CHECKING OUT';
+      inEl.textContent=fmtDay(ci,true);
+      outEl.textContent=fmtDay(co,true);
+    }
+    inEl.parentElement.style.visibility='visible';
+    outEl.parentElement.style.visibility='visible';
     var msgEl=document.getElementById('ovMsg');
     msgEl.textContent=(c.property&&c.property.welcomeMessage)||'';
     fitText(msgEl,12);
@@ -916,11 +952,21 @@
     var ciEl=document.getElementById('ovCi');
     if(ciEl){
       ciEl.innerHTML=
-        '<span class="ci-col">CHECK‑IN<span class="ci-time">'+esc(shortTime(hr.checkInTime))+'</span></span>'+
-        '<span class="ci-col">CHECK‑OUT<span class="ci-time">'+esc(shortTime(hr.checkoutTime))+'</span></span>';
-      fitText(ciEl,8);
+        '<span class="ci-row">CHECK IN<span class="ci-time">'+esc(shortTime(hr.checkInTime))+'</span></span>'+
+        '<span class="ci-row">CHECK OUT<span class="ci-time">'+esc(shortTime(hr.checkoutTime))+'</span></span>';
+      fitText(ciEl,11);
     }
   }
+
+  var clockMode=false;
+  function updateClock(){
+    if(!clockMode)return;
+    var now=new Date();
+    var inEl=document.getElementById('ovIn'),outEl=document.getElementById('ovOut');
+    inEl.textContent=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+    outEl.textContent=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  }
+  setInterval(updateClock,15000);
 
   /* "4:00 PM" -> "4PM" for the compact check-in/out cloud (her design uses the short form) */
   function shortTime(t){
@@ -980,9 +1026,42 @@
   var weatherSeq=0;
   var weatherController=null;
   var lastWeather=null;
-  function setWx(temp,cond){
+  function setWx(temp,cond,code){
     document.querySelector('.wx-temp').textContent=temp;
     document.querySelector('.wx-cond').textContent=cond;
+    setWxIcon(code);
+  }
+
+  /* Line-art weather icon in her palette that follows the live condition. Her rain-cloud
+     doodle stays as the neutral art when there is no reading to draw. */
+  var WX_SUN='<circle class="sun" cx="{x}" cy="{y}" r="{r}"/>'+
+    '<path class="sun" d="M{x} {y1}v-5M{x} {y2}v5M{x1} {y}h-5M{x2} {y}h5M{xa} {ya}l-3.5-3.5M{xb} {yb}l3.5 3.5M{xb} {ya}l3.5-3.5M{xa} {yb}l-3.5 3.5"/>';
+  var WX_CLOUD='<path class="ink" d="M20 40h26a8.5 8.5 0 0 0 1.6-16.9A12 12 0 0 0 24.5 20 8 8 0 0 0 20 40z"/>';
+  function wxSun(x,y,r){
+    var ray=r+4, diag=(r+2.5)*0.7071;
+    return WX_SUN.replace(/\{x\}/g,x).replace(/\{y\}/g,y).replace(/\{r\}/g,r)
+      .replace(/\{y1\}/g,y-ray).replace(/\{y2\}/g,y+ray).replace(/\{x1\}/g,x-ray).replace(/\{x2\}/g,x+ray)
+      .replace(/\{xa\}/g,x-diag).replace(/\{ya\}/g,y-diag).replace(/\{xb\}/g,x+diag).replace(/\{yb\}/g,y+diag);
+  }
+  function wxIconMarkup(code){
+    if(code==null)return '';
+    if(code===0||code===1)return wxSun(32,24,11);
+    if(code===2)return wxSun(41,16,7)+WX_CLOUD;
+    if(code===3)return WX_CLOUD;
+    if(code===45||code===48)return '<path class="ink" d="M20 40h26a8.5 8.5 0 0 0 1.6-16.9A12 12 0 0 0 24.5 20 8 8 0 0 0 20 40"/><path class="ink" d="M16 46h34M22 40h26"/>';
+    if(code>=71&&code<=77)return WX_CLOUD+'<path class="ink" d="M24 45.5v.1M32 47v.1M40 45.5v.1"/>';
+    if(code>=95)return WX_CLOUD+'<path class="sun" d="M33 34l-4 8h6l-4 6"/>';
+    if(code>=51)return WX_CLOUD+'<path class="ink" d="M24 43l-2 4M32 43l-2 4M40 43l-2 4"/>';
+    return '';
+  }
+  function setWxIcon(code){
+    var svg=document.getElementById('wxIcon'),doodle=document.getElementById('wxDoodle');
+    if(!svg||!doodle)return;
+    var markup=wxIconMarkup(typeof code==='number'?code:null);
+    svg.innerHTML=markup;
+    /* SVG elements lack the HTML `hidden` property, so toggle the attribute directly */
+    if(markup)svg.removeAttribute('hidden');else svg.setAttribute('hidden','');
+    if(markup)doodle.setAttribute('hidden','');else doodle.removeAttribute('hidden');
   }
   function weatherLocationKey(loc){return Number(loc.lat).toFixed(3)+','+Number(loc.lon).toFixed(3);}
   function readWeatherCache(key){
@@ -998,19 +1077,19 @@
   }
   function showWeatherFallback(key){
     var cached=lastWeather&&lastWeather.key===key?lastWeather:readWeatherCache(key);
-    if(cached){lastWeather=cached;setWx(Math.round(cached.temp)+'°','Cached · '+cached.cond);}
-    else setWx('--°','Weather unavailable');
+    if(cached){lastWeather=cached;setWx(Math.round(cached.temp)+'°','Cached · '+cached.cond,cached.code);}
+    else setWx('--°','Weather unavailable',null);
   }
   function loadWeather(loc){
     var seq=++weatherSeq;
     if(weatherController)weatherController.abort();
     weatherController=null;
     if(!loc||typeof loc.lat!=='number'||typeof loc.lon!=='number'){
-      setWx('--°','Weather unavailable');return;
+      setWx('--°','Weather unavailable',null);return;
     }
     var key=weatherLocationKey(loc);
     var cached=lastWeather&&lastWeather.key===key?lastWeather:readWeatherCache(key);
-    if(cached){lastWeather=cached;setWx(Math.round(cached.temp)+'°','Cached · '+cached.cond);}
+    if(cached){lastWeather=cached;setWx(Math.round(cached.temp)+'°','Cached · '+cached.cond,cached.code);}
     var url='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(loc.lat)+'&longitude='+encodeURIComponent(loc.lon)+
       '&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto';
     weatherController=typeof AbortController!=='undefined'?new AbortController():null;
@@ -1030,9 +1109,10 @@
       if(seq!==weatherSeq)return;
       var now=d.current||{};
       if(now.temperature_2m==null||typeof now.temperature_2m!=='number')throw new Error('weather payload missing temperature');
-      var good={key:key,temp:now.temperature_2m,cond:WX[now.weather_code]||'Lake Weather',at:Date.now()};
+      var code=typeof now.weather_code==='number'?now.weather_code:null;
+      var good={key:key,temp:now.temperature_2m,cond:WX[code]||'Lake Weather',code:code,at:Date.now()};
       lastWeather=good;writeWeatherCache(good);
-      setWx(Math.round(good.temp)+'°',good.cond);
+      setWx(Math.round(good.temp)+'°',good.cond,good.code);
     }).catch(function(){
       if(seq===weatherSeq)showWeatherFallback(key);
     }).finally(function(){
@@ -1058,7 +1138,7 @@
     return '<div class="wifi">'+
       '<img class="wifi-deco wifi-deco-l" src="assets/art/heron-gator.png" alt="">'+
       '<img class="wifi-deco wifi-deco-r" src="assets/art/heron-gator.png" alt="">'+
-      '<h2 class="wifi-title">Scan to connect to WiFi</h2>'+
+      '<h2 class="wifi-title">Scan to connect</h2>'+
       '<div class="wifi-qr qr" id="wifiQR"></div>'+
       '<p class="wifi-cred">NETWORK: '+esc(w.ssid||'')+'</p>'+
       '<p class="wifi-cred">PASSWORD: '+esc(w.password||'')+'</p>'+
@@ -1068,11 +1148,10 @@
   function buildPlacesPage(c){
     return '<section class="places2">'+
       '<div class="places2-head">'+
-        '<p class="places-kicker">Our Favorite</p>'+
-        '<h2 class="places-title">Places to Eat</h2>'+
+        '<div><p class="places-kicker">Our Favorite</p><h2 class="places-title">Places to Eat</h2></div>'+
         '<img class="places-art" src="assets/art/table.png" alt="">'+
       '</div>'+
-      '<div class="places2-list">'+guideList(c&&c.placesToEat)+'</div>'+
+      guideList(c&&c.placesToEat)+
       '</section>';
   }
 
@@ -1087,20 +1166,20 @@
       '<p class="lede">A few of our favorite places nearby. Drive times from the house.</p>'+
       guideList(c&&c.localFavorites);
     var map=(c.localGuide&&c.localGuide.mapUrl)||'';
-    if(map)h+='<p class="lede" style="margin-top:1.4vmin">Scan to open the area map on your phone:</p>'+
-      '<div class="qr local-qr" id="localQR"></div>'+
-      '<p class="map-url"><strong>Map URL:</strong> <span>'+esc(map)+'</span></p>';
+    if(map)h+='<div class="map-row"><div class="qr local-qr" id="localQR"></div>'+
+      '<p class="lede">Scan to open a map of restaurants and things to do around the lake on your phone.</p></div>';
     return h;
   }
 
   function buildStreaming(c){
-    var h='<h2 style="font-family:var(--type);text-transform:uppercase;letter-spacing:.1em;font-size:clamp(24px,3vmin,40px)">Streaming</h2>';
+    var h='<h2>Streaming</h2>';
     h+='<p class="stream-lede">This screen is home base. Open an app below, then press the Home button on the remote to come back here.</p>';
     var apps=c&&Array.isArray(c.streaming)?c.streaming:[];
     if(!apps.length)return h+'<p class="lede">Streaming apps are not configured on this screen yet.</p>';
     h+='<div class="service-grid">';
     apps.forEach(function(app){
-      h+='<button class="service-btn" data-package="'+esc(app.package)+'" data-intent-url="'+esc(app.intentUrl)+'" data-label="'+esc(app.label)+'">'+esc(app.label)+'</button>';
+      h+='<button class="service-btn" style="--brand:'+esc(cleanColor(app.color,'#280F91'))+'" data-package="'+esc(app.package)+'" data-intent-url="'+esc(app.intentUrl)+'" data-label="'+esc(app.label)+'">'+
+         '<span class="dot" aria-hidden="true"></span>'+esc(app.label)+'</button>';
     });
     h+='</div>';
     return h;
@@ -1109,7 +1188,7 @@
   function guideList(items){
     var h='<ul class="guide">';
     (Array.isArray(items)?items:[]).filter(isObj).forEach(function(p){
-      h+='<li><b>'+esc(p.name)+'</b>'+(p.drive?'<i class="drive">'+esc(p.drive)+'</i>':'')+'<span>'+esc(p.note)+'</span></li>';
+      h+='<li><div class="gh"><b>'+esc(p.name)+'</b>'+(p.drive?'<i class="drive">'+esc(p.drive)+'</i>':'')+'</div><span>'+esc(p.note)+'</span></li>';
     });
     return h+'</ul>';
   }
@@ -1140,7 +1219,7 @@
     }
     if(panel.key==='local'){
       var url=(cfg.localGuide&&cfg.localGuide.mapUrl)||'';
-      if(url)makeQR('localQR',url,'Area map QR code','QR unavailable. Use the readable map URL below.');
+      if(url)makeQR('localQR',url,'Area map QR code','Map QR code unavailable right now.');
     }
     var focusEl=null;
     if(panel.key==='streaming'){
@@ -1171,6 +1250,7 @@
     setPanelMarkup(currentPanel);
     var first=initializePanel(currentPanel);
     modalBody.scrollTop=scrollTop;
+    updateScrollCues();
     if(activeLabel){
       var same=Array.prototype.slice.call(modalBody.querySelectorAll('.service-btn')).filter(function(btn){
         return btn.getAttribute('data-label')===activeLabel;
@@ -1185,8 +1265,11 @@
     lastTrigger=trigger||null;
     currentPanel=panel;
     setPanelMarkup(panel);
-    modalBody.scrollTop=0;
     modal.classList.add('open');
+    /* reset AFTER the modal is displayed: scrollTop is ignored while it is display:none,
+       which used to carry the previous panel's scroll offset into the next one. Instant,
+       so the smooth D-pad scrolling does not animate the reset. */
+    try{modalBody.scrollTo({top:0,behavior:'instant'});}catch(e){modalBody.scrollTop=0;}
     modal.setAttribute('aria-hidden','false');
     modal.setAttribute('aria-labelledby','modalTitle');
     document.getElementById('modalClose').setAttribute('aria-label','Close '+(panel.label||'panel'));
@@ -1194,6 +1277,18 @@
     if(scr){scr.inert=true;scr.setAttribute('aria-hidden','true');}
     var focusEl=initializePanel(panel);
     focusPanel(focusEl);
+    updateScrollCues();
+  }
+
+  function updateScrollCues(){
+    var card=modal.querySelector('.modal-card');
+    if(!card)return;
+    var open=modal.classList.contains('open');
+    var top=modalBody.scrollTop;
+    var canUp=open&&top>4;
+    var canDown=open&&top+modalBody.clientHeight<modalBody.scrollHeight-4;
+    card.classList.toggle('can-up',canUp);
+    card.classList.toggle('can-down',canDown);
   }
 
   function closeModal(){
@@ -1216,6 +1311,8 @@
   function wireModal(){
     document.getElementById('modalClose').addEventListener('click',closeModal);
     modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+    modalBody.addEventListener('scroll',updateScrollCues,{passive:true});
+    window.addEventListener('resize',updateScrollCues);
   }
 
   function qrEsc(s){ return String(s==null?'':s).replace(/([\\;,:"])/g,'\\$1'); }
@@ -1322,7 +1419,12 @@
     var els=focusables();
     if(!els.length)return false;
     var cur=document.activeElement;
-    if(els.indexOf(cur)===-1){els[0].focus();return true;}
+    if(els.indexOf(cur)===-1){
+      /* nothing focused yet: land on Streaming, the tile guests reach for most */
+      var preferred=stage.querySelector('.tile[data-key="streaming"]');
+      (preferred&&els.indexOf(preferred)!==-1?preferred:els[0]).focus();
+      return true;
+    }
     var cr=cur.getBoundingClientRect(), cx=cr.left+cr.width/2, cy=cr.top+cr.height/2;
     var best=null,bestScore=Infinity;
     for(var i=0;i<els.length;i++){
@@ -1341,7 +1443,10 @@
     return false;
   }
   function scrollModal(sign){
-    if(modalBody)modalBody.scrollBy(0, sign*Math.round(modalBody.clientHeight*0.62));
+    if(!modalBody)return;
+    var step=sign*Math.round(modalBody.clientHeight*0.5);
+    try{modalBody.scrollBy({top:step,behavior:'smooth'});}
+    catch(e){modalBody.scrollBy(0,step);}
   }
   function trapModalTab(e){
     var els=focusables(true);
