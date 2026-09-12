@@ -72,13 +72,14 @@
   .cloud-art{width:48%;height:auto;object-fit:contain;pointer-events:none;flex:0 0 auto}
   .cloud-cap{font-family:var(--type);color:var(--green);font-size:clamp(12px,.7vw,18px);margin-top:.08em}
   .cloud-cap .wx-cond{display:block;font-size:.62em;line-height:1.05;margin-top:.12em;white-space:nowrap}
-  .cloud-awn{width:40%;height:auto;margin-bottom:.08em;pointer-events:none;flex:0 0 auto}
+  .cloud-awn{width:56%;height:auto;margin-bottom:.1em;pointer-events:none;flex:0 0 auto}
   .cloud-times{display:flex;justify-content:center;gap:4%;width:100%;font-family:var(--type);font-size:clamp(10px,.55vw,13px);line-height:1.08}
   .cloud-times .ci-col{display:flex;flex-direction:column;align-items:center;white-space:nowrap}
   .cloud-times .ci-time{margin-top:.06em}
-  .cloud-qrlbl{font-family:var(--type);font-size:clamp(10px,.58cqw,22px);letter-spacing:.03em;
-               margin-bottom:.3em;line-height:1}
-  .cloud-qr-box{width:50%;aspect-ratio:1;background:#fff;line-height:0;flex:0 0 auto}
+  .cloud-qr{padding-top:clamp(20px,1.5vw,30px)}
+  .cloud-qrlbl{font-family:var(--type);font-size:clamp(8px,.46vw,11px);letter-spacing:.02em;
+               margin:0 0 .2em;line-height:1.12;max-width:92%;text-wrap:balance}
+  .cloud-qr-box{width:46%;aspect-ratio:1;background:#fff;line-height:0;flex:0 0 auto}
   .cloud-qr-box canvas,.cloud-qr-box img{width:100%!important;height:100%!important;display:block}
 
   /* live text in her real fonts, sitting straight on the lavender */
@@ -324,7 +325,7 @@
       <div class="cloud-times" id="ovCi"></div>
     </div>
     <div class="cloud cloud-qr">
-      <div class="cloud-qrlbl">SCAN TO CONNECT TO WIFI</div>
+      <div class="cloud-qrlbl">SCAN TO CONNECT<br>TO WIFI</div>
       <div class="cloud-qr-box qr" id="mainQR"></div>
     </div>
 
