@@ -65,15 +65,17 @@
   .cloud{position:absolute;top:78%;width:15%;height:18.4%;
          background:url(assets/art/doodle-frame.png) center/100% 100% no-repeat;
          display:flex;flex-direction:column;align-items:center;justify-content:center;
-         text-align:center;line-height:1.12;color:var(--ink)}
+         text-align:center;line-height:1.05;color:var(--ink);
+         padding:clamp(14px,1.15vw,24px) clamp(16px,1.3vw,28px);
+         box-sizing:border-box}
   .cloud-wx{left:26.5%} .cloud-ci{left:42.3%} .cloud-qr{left:57.9%}
-  .cloud-art{width:54%;height:auto;object-fit:contain;pointer-events:none}
-  .cloud-cap{font-family:var(--type);color:var(--green);font-size:clamp(13px,.82cqw,32px);margin-top:.15em}
-  .cloud-cap .wx-cond{display:block;font-size:.62em;line-height:1.05;margin-top:.18em;white-space:nowrap}
-  .cloud-awn{width:66%;height:auto;margin-bottom:.4em;pointer-events:none}
-  .cloud-times{display:flex;gap:9%;font-family:var(--type);font-size:clamp(13px,.82cqw,32px);line-height:1.18}
+  .cloud-art{width:48%;height:auto;object-fit:contain;pointer-events:none;flex:0 0 auto}
+  .cloud-cap{font-family:var(--type);color:var(--green);font-size:clamp(12px,.7vw,18px);margin-top:.08em}
+  .cloud-cap .wx-cond{display:block;font-size:.62em;line-height:1.05;margin-top:.12em;white-space:nowrap}
+  .cloud-awn{width:40%;height:auto;margin-bottom:.08em;pointer-events:none;flex:0 0 auto}
+  .cloud-times{display:flex;justify-content:center;gap:4%;width:100%;font-family:var(--type);font-size:clamp(10px,.55vw,13px);line-height:1.08}
   .cloud-times .ci-col{display:flex;flex-direction:column;align-items:center;white-space:nowrap}
-  .cloud-times .ci-time{margin-top:.12em}
+  .cloud-times .ci-time{margin-top:.06em}
   .cloud-qrlbl{font-family:var(--type);font-size:clamp(10px,.58cqw,22px);letter-spacing:.03em;
                margin-bottom:.3em;line-height:1}
   .cloud-qr-box{width:50%;aspect-ratio:1;background:#fff;line-height:0;flex:0 0 auto}
@@ -90,8 +92,8 @@
   .t-out{left:auto;right:4.4%;top:17.5%;width:14%;height:7.5%}
   .corner .lbl{font-family:var(--type);font-size:clamp(18px,1.72cqw,66px);letter-spacing:.08em}
   .corner .val{font-family:var(--type);font-size:clamp(17px,1.67cqw,64px);letter-spacing:.03em}
-  .t-msg{left:31.5%;top:43.8%;width:37%;height:6.6%;font-family:var(--type);
-         letter-spacing:.07em;font-size:clamp(16px,1.2cqw,46px);text-transform:uppercase}
+  .t-msg{left:28.5%;top:42.4%;width:43%;height:9.4%;font-family:var(--type);
+         letter-spacing:.05em;font-size:clamp(14px,1.05vw,26px);text-transform:uppercase}
 
   /* tiles = her drawn snapshot buttons; the art IS the button face */
   .tile{position:absolute;top:53%;width:9.2%;display:flex;flex-direction:column;align-items:center;
@@ -924,9 +926,12 @@
     fitText(msgEl,12);
     var hr=c.houseRules||{};
     var ciEl=document.getElementById('ovCi');
-    if(ciEl)ciEl.innerHTML=
-      '<span class="ci-col">CHECK‑IN<span class="ci-time">'+esc(shortTime(hr.checkInTime))+'</span></span>'+
-      '<span class="ci-col">CHECK‑OUT<span class="ci-time">'+esc(shortTime(hr.checkoutTime))+'</span></span>';
+    if(ciEl){
+      ciEl.innerHTML=
+        '<span class="ci-col">CHECK‑IN<span class="ci-time">'+esc(shortTime(hr.checkInTime))+'</span></span>'+
+        '<span class="ci-col">CHECK‑OUT<span class="ci-time">'+esc(shortTime(hr.checkoutTime))+'</span></span>';
+      fitText(ciEl,8);
+    }
   }
 
   /* "4:00 PM" -> "4PM" for the compact check-in/out cloud (her design uses the short form) */
