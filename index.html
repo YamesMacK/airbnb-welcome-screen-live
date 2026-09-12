@@ -1471,20 +1471,25 @@
       key==='BrowserBack'||key==='AndroidBack'||code===4||code===8||code===27;
   }
 
+  /* Back on the remote must never leave the welcome screen. Fully walks WebView history on
+     Back, so the page keeps a spare same-URL entry for it to consume. Chromium skips entries
+     a page pushes without a user gesture (its Back-trap intervention), so the entry is armed
+     from the guest's own key presses and re-armed after each Back consumes it. */
   function lockHomeHistory(){
+    var armed=false;
     var arm=function(){
-      try{
-        history.replaceState({sshHome:true},'',location.href);
-        history.pushState({sshHome:true},'',location.href);
-      }catch(e){}
+      try{history.pushState({sshHome:true},'',location.href);armed=true;}catch(e){}
     };
+    try{history.replaceState({sshHome:true},'',location.href);}catch(e){}
     arm();
-    /* Fully can clear WebView history once the page has finished loading, which would
-       also drop the guard entry above; re-arm after load so Back always has one to eat. */
-    if(document.readyState==='complete')setTimeout(arm,1500);
-    else window.addEventListener('load',function(){setTimeout(arm,1500);});
+    var armOnGesture=function(){if(!armed)arm();};
+    ['keydown','pointerdown','click','touchstart'].forEach(function(ev){
+      document.addEventListener(ev,armOnGesture,{capture:true,passive:true});
+    });
     window.addEventListener('popstate',function(){
-      try{history.pushState({sshHome:true},'',location.href);}catch(err){}
+      /* this push may be skippable if Fully swallowed the key; the next gesture arms a real one */
+      try{history.pushState({sshHome:true},'',location.href);}catch(e){}
+      armed=false;
       goHomeScreen();
     });
   }
