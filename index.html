@@ -1477,12 +1477,10 @@
      from the guest's own key presses and re-armed after each Back consumes it. */
   function lockHomeHistory(){
     var armed=false;
-    var arm=function(){
-      try{history.pushState({sshHome:true},'',location.href);armed=true;}catch(e){}
-    };
+    var push=function(){try{history.pushState({sshHome:true},'',location.href);}catch(e){}};
     try{history.replaceState({sshHome:true},'',location.href);}catch(e){}
-    arm();
-    var armOnGesture=function(){if(!armed)arm();};
+    push(); /* load-time entry: Chromium may skip it, so it does not count as armed */
+    var armOnGesture=function(){if(!armed){push();armed=true;}};
     ['keydown','pointerdown','click','touchstart'].forEach(function(ev){
       document.addEventListener(ev,armOnGesture,{capture:true,passive:true});
     });
