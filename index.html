@@ -146,12 +146,12 @@
   /* scroll cues: text fades out at the card edges instead of being sliced, and a
      chevron says "more below" because Android hides the scrollbar on the TV */
   .modal-fade{
-    position:absolute; left:4px; right:4px; height:clamp(34px,7vmin,80px); z-index:2;
+    position:absolute; left:1px; right:1px; height:clamp(36px,7vmin,80px); z-index:2;
     pointer-events:none; opacity:0; transition:opacity .2s ease;
   }
-  .modal-fade.top{ top:4px; border-radius:14px 14px 0 0; background:linear-gradient(var(--ground) 30%,rgba(245,234,246,0)); }
+  .modal-fade.top{ top:1px; border-radius:16px 16px 0 0; background:linear-gradient(var(--ground) 35%,rgba(245,234,246,0)); }
   .modal-fade.bottom{
-    bottom:4px; border-radius:0 0 14px 14px; background:linear-gradient(rgba(245,234,246,0),var(--ground) 70%);
+    bottom:1px; border-radius:0 0 16px 16px; background:linear-gradient(rgba(245,234,246,0),var(--ground) 65%);
     display:flex; align-items:flex-end; justify-content:center; padding-bottom:clamp(12px,2vmin,22px);
   }
   .modal-fade.bottom::after{
