@@ -110,12 +110,6 @@
   body.debug .t{outline:1.5px dashed rgba(0,110,255,.8)}
   body.debug .tile .ic{outline:1.5px solid rgba(253,59,53,.7)}
 
-  .remote-hint{
-    position:absolute; left:50%; transform:translateX(-50%); top:75%;
-    font-size:clamp(13px,.72cqw,28px); letter-spacing:.16em; text-transform:uppercase;
-    color:var(--ink); opacity:.9; z-index:5; white-space:nowrap;
-  }
-
   /* ============ MODALS (her other sections, behind the buttons) ============ */
   .modal{
     position:fixed; inset:0; z-index:20; display:none;
@@ -141,15 +135,8 @@
     content:""; position:absolute; inset:10px;
     border:1.6px dashed rgba(253,59,53,.5); border-radius:10px; pointer-events:none;
   }
-  .modal-close{
-    position:absolute; top:clamp(10px,1.6vmin,20px); right:clamp(10px,1.6vmin,20px); z-index:3;
-    width:clamp(44px,5.4vmin,124px); height:clamp(44px,5.4vmin,124px);
-    display:grid; place-items:center;
-    color:var(--coral); background:var(--paper);
-    border:2px solid var(--coral); border-radius:50%;
-    font-size:clamp(20px,2.6vmin,60px); cursor:pointer;
-  }
-  .modal-close:focus,.service-btn:focus{ outline:none; box-shadow:0 0 0 4px var(--paper),0 0 0 9px var(--ink); }
+  .modal-close{display:none}
+  .service-btn:focus{ outline:none; box-shadow:0 0 0 4px var(--paper),0 0 0 9px var(--ink); }
 
   /* Places to Eat: the HTML header (kicker + script title + table art) + picks beside it */
   .places2{ display:grid; grid-template-columns:minmax(0,.62fr) minmax(0,1.38fr); gap:clamp(14px,2.6vmin,38px); align-items:start; }
@@ -341,13 +328,12 @@
     <div class="t t-msg" id="ovMsg"></div>
 
     <!-- tiles injected here -->
-    <div class="remote-hint" aria-hidden="true">Arrows choose &middot; OK select &middot; Back close</div>
   </div>
 </main>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal-card">
-    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <button class="modal-close" id="modalClose" type="button" tabindex="-1" hidden aria-label="Close">&times;</button>
     <div id="modalBody"></div>
   </div>
 </div>
@@ -1171,6 +1157,10 @@
     return focusEl;
   }
 
+  function focusPanel(el){
+    if(el&&el.focus)el.focus();
+  }
+
   function refreshOpenModal(){
     if(!currentPanel||!modal.classList.contains('open'))return;
     var scrollTop=modalBody.scrollTop;
@@ -1184,9 +1174,9 @@
       var same=Array.prototype.slice.call(modalBody.querySelectorAll('.service-btn')).filter(function(btn){
         return btn.getAttribute('data-label')===activeLabel;
       })[0];
-      if(same)same.focus();else (first||document.getElementById('modalClose')).focus();
+      if(same)same.focus();else focusPanel(first);
     }else if(activeWasBody){
-      (first||document.getElementById('modalClose')).focus();
+      focusPanel(first);
     }
   }
 
@@ -1202,7 +1192,7 @@
     var scr=document.querySelector('.screen');
     if(scr){scr.inert=true;scr.setAttribute('aria-hidden','true');}
     var focusEl=initializePanel(panel);
-    (focusEl||document.getElementById('modalClose')).focus();
+    focusPanel(focusEl);
   }
 
   function closeModal(){
