@@ -478,6 +478,10 @@
     wireModal();
     if(setupMode)initSetup();
     else{
+      /* Reached by the remote's Back key walking into an older WebView entry (a ?panel=
+         screenshot URL, for example): go straight back to the configured Start URL. */
+      if(reachedByHistoryTraversal()&&reloadStartUrl())return;
+      window.addEventListener('pageshow',function(e){if(e.persisted)reloadStartUrl();});
       lockHomeHistory();
       var pm=(location.search.match(/[?&]panel=([a-z]+)/i)||[])[1];
       if(pm){var pp=PANELS.filter(function(x){return x.key===pm;})[0]; if(pp)openModal(pp,null);}
@@ -1478,13 +1482,28 @@
     });
   }
 
+  function reachedByHistoryTraversal(){
+    try{
+      var nav=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
+      if(nav&&nav.type)return nav.type==='back_forward';
+      return !!(performance.navigation&&performance.navigation.type===2);
+    }catch(e){return false;}
+  }
+  function reloadStartUrl(){
+    if(window.fully&&typeof window.fully.loadStartURL==='function'){
+      try{window.fully.loadStartURL();return true;}catch(e){}
+    }
+    return false;
+  }
   function goHomeScreen(){
     if(setupMode)return;
     closeModal();
     if(window.fully&&typeof window.fully.loadStartURL==='function'){
-      var start=String(window.fully.getStartUrl&&window.fully.getStartUrl()||'').split('#')[0];
-      var here=String(location.href).split('#')[0];
-      if(start&&here.indexOf(start)!==0)window.fully.loadStartURL();
+      var norm=function(u){return String(u||'').split('#')[0].split('?')[0].replace(/index\.html$/,'').replace(/\/$/,'');};
+      var start=norm(window.fully.getStartUrl&&window.fully.getStartUrl());
+      var here=norm(location.href);
+      /* any query (a ?panel= hook, a stale URL) means this is not the plain guest screen */
+      if(start&&(here!==start||location.search))reloadStartUrl();
     }
   }
   function isCenterKey(e){
