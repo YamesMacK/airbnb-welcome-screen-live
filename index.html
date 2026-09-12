@@ -1472,10 +1472,17 @@
   }
 
   function lockHomeHistory(){
-    try{
-      history.replaceState({sshHome:true},'',location.href);
-      history.pushState({sshHome:true},'',location.href);
-    }catch(e){}
+    var arm=function(){
+      try{
+        history.replaceState({sshHome:true},'',location.href);
+        history.pushState({sshHome:true},'',location.href);
+      }catch(e){}
+    };
+    arm();
+    /* Fully can clear WebView history once the page has finished loading, which would
+       also drop the guard entry above; re-arm after load so Back always has one to eat. */
+    if(document.readyState==='complete')setTimeout(arm,1500);
+    else window.addEventListener('load',function(){setTimeout(arm,1500);});
     window.addEventListener('popstate',function(){
       try{history.pushState({sshHome:true},'',location.href);}catch(err){}
       goHomeScreen();
