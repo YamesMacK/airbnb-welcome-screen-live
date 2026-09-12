@@ -143,26 +143,25 @@
     content:""; position:absolute; inset:10px; z-index:3;
     border:1.6px dashed rgba(253,59,53,.5); border-radius:10px; pointer-events:none;
   }
-  /* scroll cues: the scroll box masks its own edges so text fades out instead of being
-     sliced, and a chevron says "more below" because Android hides the scrollbar on the TV */
-  #modalBody{
-    --fade-top:0px; --fade-bottom:0px;
-    -webkit-mask-image:linear-gradient(to bottom,transparent,#000 var(--fade-top),#000 calc(100% - var(--fade-bottom)),transparent);
-    mask-image:linear-gradient(to bottom,transparent,#000 var(--fade-top),#000 calc(100% - var(--fade-bottom)),transparent);
+  /* scroll cues: gradient overlays fade text out at the card edges instead of slicing it,
+     and a chevron says "more below" because Android hides the scrollbar on the TV. The
+     overlays overshoot the card so their edge never coincides with the rounded clip seam. */
+  .modal-fade{
+    position:absolute; left:-6px; right:-6px; height:clamp(42px,8vmin,90px); z-index:2;
+    pointer-events:none; opacity:0; transition:opacity .2s ease;
   }
-  .modal-card.can-up #modalBody{--fade-top:clamp(36px,7vmin,80px)}
-  .modal-card.can-down #modalBody{--fade-bottom:clamp(36px,7vmin,80px)}
-  .modal-more{
-    position:absolute; left:0; right:0; bottom:clamp(12px,2vmin,22px); z-index:2;
-    display:flex; justify-content:center; pointer-events:none; opacity:0; transition:opacity .2s ease;
+  .modal-fade.top{ top:-6px; background:linear-gradient(var(--ground) 40%,rgba(245,234,246,0)); }
+  .modal-fade.bottom{
+    bottom:-6px; background:linear-gradient(rgba(245,234,246,0),var(--ground) 60%);
+    display:flex; align-items:flex-end; justify-content:center; padding-bottom:clamp(18px,3vmin,30px);
   }
-  .modal-more::after{
+  .modal-fade.bottom::after{
     content:""; width:clamp(10px,1.3vmin,18px); height:clamp(10px,1.3vmin,18px);
     border-right:3px solid var(--ink); border-bottom:3px solid var(--ink); transform:rotate(45deg);
     animation:ssh-nudge 1.6s ease-in-out infinite;
   }
   @keyframes ssh-nudge{0%,100%{translate:0 0}50%{translate:0 4px}}
-  .modal-card.can-down .modal-more{opacity:1}
+  .modal-card.can-up .modal-fade.top,.modal-card.can-down .modal-fade.bottom{opacity:1}
   .modal-close{display:none}
   .service-btn:focus{ outline:none; box-shadow:0 0 0 4px var(--paper),0 0 0 9px var(--ink); }
 
@@ -359,7 +358,8 @@
   <div class="modal-card">
     <button class="modal-close" id="modalClose" type="button" tabindex="-1" hidden aria-label="Close">&times;</button>
     <div id="modalBody"></div>
-    <div class="modal-more" aria-hidden="true"></div>
+    <div class="modal-fade top" aria-hidden="true"></div>
+    <div class="modal-fade bottom" aria-hidden="true"></div>
   </div>
 </div>
 
