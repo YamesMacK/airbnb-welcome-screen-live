@@ -59,9 +59,9 @@
   <p class="note">After Save, tap Back, wait a few seconds, then tap Show the TV. That picture is the Shield.</p>
   <details>
     <summary>First-time setup (James)</summary>
-    <p class="note">The Fully remote-admin password is stored only on this phone.</p>
+    <p class="note">The Fully remote-admin password is stored only on this phone. Shared Tailscale users need the full Shield address below, not shield:2323.</p>
     <label for="host">Fully address</label>
-    <input id="host" value="http://shield:2323" autocomplete="off">
+    <input id="host" value="http://shield.tail240fad.ts.net:2323" autocomplete="off">
     <label for="password">Fully remote-admin password</label>
     <input id="password" type="password" autocomplete="current-password">
   </details>
@@ -71,6 +71,7 @@
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
   var APPLY='https://yamesmack.github.io/airbnb-welcome-screen-live/apply.html';
+  var DEFAULT_HOST='http://shield.tail240fad.ts.net:2323';
   function $(id){return document.getElementById(id);}
   function load(){
     try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}
@@ -79,7 +80,8 @@
     localStorage.setItem(KEY,JSON.stringify({host:host,password:password}));
   }
   var stored=load();
-  if(stored.host)$('host').value=stored.host;
+  if(stored.host && stored.host.replace(/\/$/,'')!=='http://shield:2323') $('host').value=stored.host;
+  else $('host').value=DEFAULT_HOST;
   if(stored.password)$('password').value=stored.password;
 
   function show(el,msg){
@@ -92,7 +94,7 @@
     return APPLY+'?setStay='+encodeStayPayload(payload);
   }
   function fullyPost(cmd, extra){
-    var host=($('host').value||'http://shield:2323').replace(/\/$/,'');
+    var host=($('host').value||DEFAULT_HOST).replace(/\/$/,'');
     var password=$('password').value;
     if(!password){
       show($('alert'),'Open First-time setup and enter the Fully password. Once is enough.');
