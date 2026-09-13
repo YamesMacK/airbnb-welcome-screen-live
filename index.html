@@ -429,6 +429,7 @@
   var configRetryT=null;
   var DEVICE_CONFIG_KEY='ssh-device-config-v1';
   var setupMode=new URLSearchParams(location.search).has('setup');
+  var idleFocus=null;
 
   /* This embedded configuration is intentionally generic and contains no guest,
      Wi-Fi, street-address, host, or phone data. It keeps the TV useful when the
@@ -485,6 +486,10 @@
       if(reachedByHistoryTraversal()&&reloadStartUrl())return;
       window.addEventListener('pageshow',function(e){if(e.persisted)reloadStartUrl();});
       lockHomeHistory();
+      idleFocus=createIdleFocus(document,5000);
+      ['keydown','pointerdown','click','touchstart'].forEach(function(ev){
+        document.addEventListener(ev,idleFocus.note,{capture:true,passive:true});
+      });
       var pm=(location.search.match(/[?&]panel=([a-z]+)/i)||[])[1];
       if(pm){var pp=PANELS.filter(function(x){return x.key===pm;})[0]; if(pp)openModal(pp,null);}
     }
@@ -1410,6 +1415,28 @@
     clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show');},3200);
   }
 
+  /* Hide the D-pad ring after idle so the welcome screen looks unselected again.
+     Next arrow press then lands on Streaming, same as a cold start. */
+  function createIdleFocus(doc, delayMs){
+    var timer=null;
+    function inSetup(){
+      var setup=doc.getElementById&&doc.getElementById('setup');
+      return !!(setup&&!setup.hidden);
+    }
+    function goIdle(){
+      if(inSetup())return;
+      var el=doc.activeElement;
+      if(el&&typeof el.blur==='function'&&el!==doc.body&&el!==doc.documentElement)el.blur();
+    }
+    function note(){
+      if(inSetup())return;
+      clearTimeout(timer);
+      timer=setTimeout(goIdle,delayMs);
+    }
+    function dispose(){clearTimeout(timer);timer=null;}
+    return {note:note,goIdle:goIdle,dispose:dispose};
+  }
+
   /* ----- TV remote / D-pad ----- */
   function focusables(includeOffscreen){
     var setup=document.getElementById('setup');
@@ -1559,7 +1586,7 @@
     setOverlays:setOverlays,nameLabel:nameLabel,fitText:fitText,PANELS:PANELS,
     normalizeConfig:normalizeConfig,launchApp:launchApp,closeModal:closeModal,
     wifiQrPayload:wifiQrPayload,refreshOpenModal:refreshOpenModal,
-    refreshExpiredGuest:refreshExpiredGuest
+    refreshExpiredGuest:refreshExpiredGuest,createIdleFocus:createIdleFocus
   };
 })();
 </script>
