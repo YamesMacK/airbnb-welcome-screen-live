@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-store">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lake TV">
@@ -48,7 +49,7 @@
 <body>
 <main>
   <h1>Lake TV</h1>
-  <p class="lead">Turn Tailscale on, then save. Guest names stay on the TV. If you used this page earlier today, refresh first.</p>
+  <p class="lead">Turn Tailscale on, then save. Guest names stay on the TV. This is updater v3. If you do not see that, you have an old saved page.</p>
   <p class="alert" id="alert" hidden></p>
   <p class="ok" id="ok" hidden></p>
   <form id="form">
@@ -71,7 +72,7 @@
     <input id="password" type="password" autocomplete="current-password">
   </details>
 </main>
-<script src="assets/apply-stay.js"></script>
+<script src="assets/apply-stay.js?v=3"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';

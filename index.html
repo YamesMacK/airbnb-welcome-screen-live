@@ -414,7 +414,7 @@
 </main>
 
 <script src="assets/qrcode.min.js"></script>
-<script src="assets/apply-stay.js"></script>
+<script src="assets/apply-stay.js?v=3"></script>
 <script>
 (function(){
   "use strict";
@@ -432,16 +432,26 @@
   var setupMode=new URLSearchParams(location.search).has('setup');
   var idleFocus=null;
   (function consumeSetStay(){
-    if(typeof applyStayFromQuery!=='function')return;
-    var raw=null;
-    try{raw=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return;}
-    var result=applyStayFromQuery(location.search,raw,location.hash);
-    if(!result.applied)return;
-    try{localStorage.setItem(DEVICE_CONFIG_KEY,result.next);}catch(e){return;}
-    if(window.fully&&typeof window.fully.loadStartURL==='function'){
-      try{window.fully.loadStartURL();return;}catch(e){}
+    var done=false;
+    function run(){
+      if(done||typeof applyStayFromQuery!=='function')return;
+      var raw=null;
+      try{raw=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return;}
+      var result=applyStayFromQuery(location.search,raw,location.hash);
+      if(!result.applied)return;
+      done=true;
+      try{localStorage.setItem(DEVICE_CONFIG_KEY,result.next);}catch(e){return;}
+      if(window.fully&&typeof window.fully.loadStartURL==='function'){
+        try{window.fully.loadStartURL();return;}catch(e){}
+      }
+      location.replace(location.pathname);
     }
-    location.replace(location.pathname);
+    run();
+    window.addEventListener('hashchange',run);
+    window.addEventListener('pageshow',run);
+    setTimeout(run,0);
+    setTimeout(run,300);
+    setTimeout(run,1000);
   })();
 
   /* This embedded configuration is intentionally generic and contains no guest,
