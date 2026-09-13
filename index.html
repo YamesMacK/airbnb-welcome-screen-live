@@ -414,6 +414,7 @@
 </main>
 
 <script src="assets/qrcode.min.js"></script>
+<script src="assets/apply-stay.js"></script>
 <script>
 (function(){
   "use strict";
@@ -430,6 +431,18 @@
   var DEVICE_CONFIG_KEY='ssh-device-config-v1';
   var setupMode=new URLSearchParams(location.search).has('setup');
   var idleFocus=null;
+  (function consumeSetStay(){
+    if(typeof applyStayFromQuery!=='function')return;
+    var raw=null;
+    try{raw=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return;}
+    var result=applyStayFromQuery(location.search,raw);
+    if(!result.applied)return;
+    try{localStorage.setItem(DEVICE_CONFIG_KEY,result.next);}catch(e){return;}
+    if(window.fully&&typeof window.fully.loadStartURL==='function'){
+      try{window.fully.loadStartURL();return;}catch(e){}
+    }
+    location.replace(location.pathname);
+  })();
 
   /* This embedded configuration is intentionally generic and contains no guest,
      Wi-Fi, street-address, host, or phone data. It keeps the TV useful when the
