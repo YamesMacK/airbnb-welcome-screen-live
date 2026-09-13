@@ -435,7 +435,7 @@
     if(typeof applyStayFromQuery!=='function')return;
     var raw=null;
     try{raw=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return;}
-    var result=applyStayFromQuery(location.search,raw);
+    var result=applyStayFromQuery(location.search,raw,location.hash);
     if(!result.applied)return;
     try{localStorage.setItem(DEVICE_CONFIG_KEY,result.next);}catch(e){return;}
     if(window.fully&&typeof window.fully.loadStartURL==='function'){

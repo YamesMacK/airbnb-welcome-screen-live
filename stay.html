@@ -92,12 +92,8 @@
     el.textContent=msg||'';
   }
   function stayUrl(name,checkIn,checkOut){
-    var u=new URL(START);
-    u.searchParams.set('setStay','1');
-    u.searchParams.set('n',name);
-    u.searchParams.set('in',checkIn);
-    u.searchParams.set('out',checkOut);
-    return u.href;
+    var payload=name?{n:name,in:checkIn,out:checkOut}:{clear:true};
+    return START.replace(/\/?$/,'/')+'#setStay='+encodeURIComponent(JSON.stringify(payload));
   }
   function send(name,checkIn,checkOut){
     var host=($('host').value||'http://shield:2323').replace(/\/$/,'');
@@ -107,12 +103,10 @@
       return;
     }
     saveRemote(host,password);
-    var fully=new URL(host+'/');
-    fully.searchParams.set('cmd','loadURL');
-    fully.searchParams.set('password',password);
-    fully.searchParams.set('url',stayUrl(name,checkIn,checkOut));
+    var fully=host+'/?cmd=loadURL&password='+encodeURIComponent(password)+
+      '&url='+encodeURIComponent(stayUrl(name,checkIn,checkOut));
     show($('ok'),'Sending to the lake TV. Open Tailscale if nothing happens.');
-    location.href=fully.href;
+    location.href=fully;
   }
 
   $('form').addEventListener('submit',function(e){
