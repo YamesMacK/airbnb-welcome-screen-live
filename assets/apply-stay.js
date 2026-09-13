@@ -15,14 +15,20 @@ function applyStay(raw, name, checkIn, checkOut) {
 }
 
 function stayPayloadFromLocation(search, hash) {
-  var raw = '';
-  if (search) {
-    raw = new URLSearchParams(String(search).replace(/^\?/, '')).get('setStay') || '';
+  function extract(src) {
+    if (!src) return '';
+    var s = String(src).replace(/^[?#]/, '');
+    var fromParams = '';
+    try { fromParams = new URLSearchParams(s).get('setStay') || ''; } catch (e) {}
+    if (fromParams && fromParams !== '1') return fromParams;
+    var idx = s.indexOf('setStay=');
+    if (idx === -1) return '';
+    var rest = s.slice(idx + 8);
+    var amp = rest.indexOf('&');
+    if (amp !== -1) rest = rest.slice(0, amp);
+    try { return decodeURIComponent(rest); } catch (e2) { return rest; }
   }
-  if ((!raw || raw === '1') && hash) {
-    var h = String(hash).replace(/^#/, '');
-    raw = new URLSearchParams(h).get('setStay') || '';
-  }
+  var raw = extract(search) || extract(hash);
   if (!raw || raw === '1') return null;
   try { return JSON.parse(raw); } catch (e) {
     try { return JSON.parse(decodeURIComponent(raw)); } catch (e2) { return null; }

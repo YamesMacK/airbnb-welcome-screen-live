@@ -74,7 +74,7 @@
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
-  var START='https://yamesmack.github.io/airbnb-welcome-screen-live/';
+  var START='https://yamesmack.github.io/airbnb-welcome-screen-live/index.html';
   function $(id){return document.getElementById(id);}
   function load(){
     try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}
@@ -93,7 +93,7 @@
   }
   function stayUrl(name,checkIn,checkOut){
     var payload=name?{n:name,in:checkIn,out:checkOut}:{clear:true};
-    return START.replace(/\/?$/,'/')+'#setStay='+encodeURIComponent(JSON.stringify(payload));
+    return START+'#setStay='+encodeURIComponent(JSON.stringify(payload));
   }
   function send(name,checkIn,checkOut){
     var host=($('host').value||'http://shield:2323').replace(/\/$/,'');
