@@ -1,6 +1,5 @@
 'use strict';
 
-/* Merge guest fields into Shield localStorage JSON. Never drop wifi/safety. */
 function applyStay(raw, name, checkIn, checkOut) {
   var d = {};
   if (raw) {
@@ -12,6 +11,28 @@ function applyStay(raw, name, checkIn, checkOut) {
   d.guest.checkIn = checkIn;
   d.guest.checkOut = checkOut;
   return { next: JSON.stringify(d) };
+}
+
+function encodeStayPayload(obj) {
+  var json = JSON.stringify(obj);
+  var b64;
+  if (typeof btoa === 'function') b64 = btoa(unescape(encodeURIComponent(json)));
+  else b64 = Buffer.from(json, 'utf8').toString('base64');
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function decodeStayPayload(raw) {
+  if (!raw || raw === '1') return null;
+  try { return JSON.parse(raw); } catch (e) {}
+  try { return JSON.parse(decodeURIComponent(raw)); } catch (e) {}
+  var s = String(raw).replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  try {
+    var json = typeof atob === 'function'
+      ? decodeURIComponent(escape(atob(s)))
+      : Buffer.from(s, 'base64').toString('utf8');
+    return JSON.parse(json);
+  } catch (e2) { return null; }
 }
 
 function stayPayloadFromLocation(search, hash) {
@@ -28,11 +49,7 @@ function stayPayloadFromLocation(search, hash) {
     if (amp !== -1) rest = rest.slice(0, amp);
     try { return decodeURIComponent(rest); } catch (e2) { return rest; }
   }
-  var raw = extract(search) || extract(hash);
-  if (!raw || raw === '1') return null;
-  try { return JSON.parse(raw); } catch (e) {
-    try { return JSON.parse(decodeURIComponent(raw)); } catch (e2) { return null; }
-  }
+  return decodeStayPayload(extract(search) || extract(hash));
 }
 
 function applyStayFromQuery(search, rawStorage, hash) {
@@ -56,4 +73,12 @@ function applyStayFromQuery(search, rawStorage, hash) {
   return { applied: true, next: result.next };
 }
 
-if (typeof module !== 'undefined') module.exports = { applyStay, applyStayFromQuery, stayPayloadFromLocation };
+if (typeof module !== 'undefined') {
+  module.exports = {
+    applyStay: applyStay,
+    applyStayFromQuery: applyStayFromQuery,
+    stayPayloadFromLocation: stayPayloadFromLocation,
+    encodeStayPayload: encodeStayPayload,
+    decodeStayPayload: decodeStayPayload
+  };
+}

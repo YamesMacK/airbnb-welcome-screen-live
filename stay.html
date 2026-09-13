@@ -48,7 +48,7 @@
 <body>
 <main>
   <h1>Lake TV</h1>
-  <p class="lead">Turn Tailscale on, then save. The lake TV updates. Guest names stay on the TV, not on this website.</p>
+  <p class="lead">Turn Tailscale on, then save. Guest names stay on the TV. If you used this page earlier today, refresh first.</p>
   <p class="alert" id="alert" hidden></p>
   <p class="ok" id="ok" hidden></p>
   <form id="form">
@@ -71,6 +71,7 @@
     <input id="password" type="password" autocomplete="current-password">
   </details>
 </main>
+<script src="assets/apply-stay.js"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
@@ -93,7 +94,7 @@
   }
   function stayUrl(name,checkIn,checkOut){
     var payload=name?{n:name,in:checkIn,out:checkOut}:{clear:true};
-    return START+'#setStay='+encodeURIComponent(JSON.stringify(payload));
+    return START+'?setStay='+encodeStayPayload(payload);
   }
   function send(name,checkIn,checkOut){
     var host=($('host').value||'http://shield:2323').replace(/\/$/,'');
@@ -103,10 +104,18 @@
       return;
     }
     saveRemote(host,password);
-    var fully=host+'/?cmd=loadURL&password='+encodeURIComponent(password)+
-      '&url='+encodeURIComponent(stayUrl(name,checkIn,checkOut));
-    show($('ok'),'Sending to the lake TV. Open Tailscale if nothing happens.');
-    location.href=fully;
+    var form=document.createElement('form');
+    form.method='GET';
+    form.action=host+'/';
+    function add(n,v){
+      var i=document.createElement('input');
+      i.type='hidden';i.name=n;i.value=v;form.appendChild(i);
+    }
+    add('cmd','loadURL');
+    add('password',password);
+    add('url',stayUrl(name,checkIn,checkOut));
+    document.body.appendChild(form);
+    form.submit();
   }
 
   $('form').addEventListener('submit',function(e){
