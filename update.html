@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-store">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lake TV">
+<title>Lake TV</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="assets/fonts/Themysion.ttf" as="font" type="font/ttf" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  @font-face{
+    font-family:'Themysion';
+    src:url('assets/fonts/Themysion.ttf') format('truetype');
+    font-weight:400;font-style:normal;font-display:swap;
+  }
+  :root{
+    --ground:#F5EAF6;--paper:#FFFDF8;--ink:#280F91;--coral:#FD3B35;--pencil:#4B4459;
+    --script:'Themysion','Brush Script MT',cursive;
+    --sans:'Inter',Avenir,'Segoe UI',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--ground);color:var(--ink);
+    font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  body{padding:28px 20px 48px}
+  main{max-width:420px;margin:0 auto}
+  h1{font-family:var(--script);font-weight:400;font-size:56px;line-height:1;margin:0 0 8px}
+  .lead{margin:0 0 24px;line-height:1.45;color:var(--pencil);font-size:16px}
+  label{display:block;font-weight:700;margin:0 0 6px}
+  input{width:100%;font:inherit;padding:14px 12px;border:2px solid var(--ink);border-radius:12px;
+    background:var(--paper);color:var(--ink);margin:0 0 16px}
+  button{width:100%;font:inherit;font-weight:700;font-size:18px;padding:16px;border-radius:14px;
+    border:2px solid var(--ink);background:var(--ink);color:var(--paper);margin-top:8px}
+  button.secondary{background:var(--paper);color:var(--ink)}
+  .note{margin:18px 0 0;font-size:14px;line-height:1.45;color:var(--pencil)}
+  .alert{padding:12px 14px;margin:0 0 18px;border-radius:10px;background:#fff4f4;color:#641010;
+    border:2px solid #8b1515}
+  .alert[hidden],.ok[hidden]{display:none}
+  .ok{padding:12px 14px;margin:0 0 18px;border-radius:10px;background:#eef8f0;color:#0A5E2E;
+    border:2px solid #0A5E2E}
+  details{margin-top:28px;color:var(--pencil);font-size:14px}
+  summary{cursor:pointer;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+  <h1>Lake TV</h1>
+  <p class="lead">Turn Tailscale on, then save. Guest names stay on the TV. This is updater v4.</p>
+  <p class="alert" id="alert" hidden></p>
+  <p class="ok" id="ok" hidden></p>
+  <form id="form">
+    <label for="name">Guest or family name</label>
+    <input id="name" autocomplete="off" maxlength="100">
+    <label for="checkIn">Check-in</label>
+    <input id="checkIn" type="date" required>
+    <label for="checkOut">Check-out</label>
+    <input id="checkOut" type="date" required>
+    <button type="submit">Save on the lake TV</button>
+    <button class="secondary" id="clear" type="button">Clear stay</button>
+  </form>
+  <p class="note">After Save, your phone may show a plain Fully page. That means it worked. Tap Back. Look at the TV.</p>
+  <details>
+    <summary>First-time setup (James)</summary>
+    <p class="note">The Fully remote-admin password is stored only on this phone.</p>
+    <label for="host">Fully address</label>
+    <input id="host" value="http://shield:2323" autocomplete="off">
+    <label for="password">Fully remote-admin password</label>
+    <input id="password" type="password" autocomplete="current-password">
+  </details>
+</main>
+<script src="assets/apply-stay.js?v=4"></script>
+<script>
+(function(){
+  var KEY='ssh-lake-tv-remote-v1';
+  var APPLY='https://yamesmack.github.io/airbnb-welcome-screen-live/apply.html';
+  function $(id){return document.getElementById(id);}
+  function load(){
+    try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}
+  }
+  function saveRemote(host,password){
+    localStorage.setItem(KEY,JSON.stringify({host:host,password:password}));
+  }
+  var stored=load();
+  if(stored.host)$('host').value=stored.host;
+  if(stored.password)$('password').value=stored.password;
+
+  function show(el,msg){
+    $('alert').hidden=true;$('ok').hidden=true;
+    el.hidden=!msg;
+    el.textContent=msg||'';
+  }
+  function stayUrl(name,checkIn,checkOut){
+    var payload=name?{n:name,in:checkIn,out:checkOut}:{clear:true};
+    return APPLY+'?setStay='+encodeStayPayload(payload);
+  }
+  function send(name,checkIn,checkOut){
+    var host=($('host').value||'http://shield:2323').replace(/\/$/,'');
+    var password=$('password').value;
+    if(!password){
+      show($('alert'),'Open First-time setup and enter the Fully password. Once is enough.');
+      return;
+    }
+    saveRemote(host,password);
+    var form=document.createElement('form');
+    form.method='POST';
+    form.action=host+'/';
+    function add(n,v){
+      var i=document.createElement('input');
+      i.type='hidden';i.name=n;i.value=v;form.appendChild(i);
+    }
+    add('cmd','loadURL');
+    add('password',password);
+    add('url',stayUrl(name,checkIn,checkOut));
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  $('form').addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=$('name').value.trim();
+    var checkIn=$('checkIn').value;
+    var checkOut=$('checkOut').value;
+    if(!name||!checkIn||!checkOut){
+      show($('alert'),'Enter a guest name and both dates.');
+      return;
+    }
+    if(checkIn>checkOut){
+      show($('alert'),'Check-out needs to be on or after check-in.');
+      return;
+    }
+    send(name,checkIn,checkOut);
+  });
+  $('clear').addEventListener('click',function(){
+    if(!confirm('Show the generic welcome on the TV?'))return;
+    $('checkIn').required=false;
+    $('checkOut').required=false;
+    send('','','');
+  });
+})();
+</script>
+</body>
+</html>

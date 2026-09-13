@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>Updating stay</title>
+</head>
+<body>
+<script src="assets/apply-stay.js?v=4"></script>
+<script>
+(function(){
+  var KEY='ssh-device-config-v1';
+  var raw=null;
+  try{raw=localStorage.getItem(KEY);}catch(e){}
+  var result=typeof applyStayFromQuery==='function'
+    ? applyStayFromQuery(location.search,raw,location.hash)
+    : {applied:false};
+  if(result.applied){
+    try{localStorage.setItem(KEY,result.next);}catch(e){}
+  }
+  location.replace('index.html');
+})();
+</script>
+</body>
+</html>
