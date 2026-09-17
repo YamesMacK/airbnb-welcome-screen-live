@@ -104,8 +104,10 @@
   .t-msg{left:28.5%;top:42.4%;width:43%;height:9.4%;font-family:var(--type);
          letter-spacing:.05em;font-size:clamp(14px,1.05vw,26px);text-transform:uppercase}
 
-  /* tiles = her drawn snapshot buttons; the art IS the button face */
-  .tile{position:absolute;top:53%;width:9.2%;display:flex;flex-direction:column;align-items:center;
+  /* tiles = her drawn snapshot buttons; the art IS the button face.
+     Seven tiles are a slightly tighter row than her original six so they still
+     sit between the gators at 1920x1080. */
+  .tile{position:absolute;top:53%;width:8.4%;display:flex;flex-direction:column;align-items:center;
         gap:.02em;background:transparent;border:0;padding:0;cursor:pointer}
   .tile .ic{width:100%;height:auto;display:block;border-radius:12px}
   .tile .lb{font-family:var(--type);font-weight:bold;font-size:clamp(16px,1.2cqw,46px);
@@ -199,6 +201,32 @@
   .wifi-qr canvas,.wifi-qr img{width:100%!important;height:100%!important;display:block}
   .wifi-cred{font-family:var(--type);font-size:clamp(16px,1.9vmin,48px);letter-spacing:.04em;
              color:var(--ink);margin:clamp(8px,1.4vmin,16px) 0 0;overflow-wrap:anywhere}
+
+  /* About the Place = house rules, how-to, and safety. The Legend is its own home tile. */
+  .about-title{text-align:center;margin:0 0 clamp(8px,1.2vmin,18px)!important}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.4vmin,36px) clamp(22px,3.2vmin,48px)}
+  .about-section{min-width:0}
+  .about-section.full{margin-top:clamp(16px,2.2vmin,32px)}
+  .about-section h3{
+    font-family:var(--type);font-size:clamp(16px,1.7vmin,40px);letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink);margin:0 0 clamp(8px,1.2vmin,16px);
+  }
+  .about-list{list-style:none}
+  .about-list li{
+    font-family:var(--sans);font-size:clamp(16px,1.7vmin,36px);line-height:1.35;
+    padding:0 0 clamp(7px,1.1vmin,12px);border-bottom:1.5px dashed rgba(40,15,145,.22);color:var(--ink);
+  }
+  .about-note{
+    font-family:var(--sans);color:var(--pencil);font-size:clamp(16px,1.7vmin,36px);
+    line-height:1.35;margin:clamp(8px,1.2vmin,16px) 0 0;
+  }
+  .howto-item{margin:0 0 clamp(8px,1.2vmin,18px)}
+  .howto-item h4{font-family:var(--sans);font-weight:700;font-size:clamp(18px,1.85vmin,44px);margin:0 0 .2em}
+  .safety-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px)}
+  .safety-item{padding:0 0 clamp(7px,1.1vmin,12px);border-bottom:1.5px dashed rgba(40,15,145,.22)}
+  .safety-item b{display:block;font-family:var(--sans);font-size:clamp(18px,1.85vmin,44px)}
+  .safety-item span{display:block;font-family:var(--sans);color:var(--pencil);
+                    font-size:clamp(16px,1.7vmin,36px);line-height:1.35;margin-top:.15em}
 
   /* Legend panel = her story section, rebuilt in HTML */
   .legend-title{text-align:center;margin:0 0 clamp(10px,2vmin,22px)!important}
@@ -298,7 +326,7 @@
      content reflows to one column on narrow phones */
   @media (max-width:900px){
     .guide{grid-template-columns:1fr}
-    .service-grid{grid-template-columns:1fr 1fr}
+    .service-grid,.about-grid,.safety-grid{grid-template-columns:1fr}
     .modal-card{width:94vw}
     .legend-house{width:84px}
     .places2-head,.map-row{flex-direction:column;align-items:flex-start}
@@ -480,12 +508,13 @@
      the first D-pad press lands on the Streaming tile. tileLabel is the exact
      wording on her art (e.g. "FOOD AND BEVERAGE", not "&"). */
   var PANELS=[
-    {key:'about',    label:'About the Place', tileLabel:'ABOUT THE\nPLACE',  icon:'tile-about.png',           left:19.8, build:buildLegendPage},
-    {key:'wifi',     label:'WiFi',            tileLabel:'WIFI',             icon:'tile-wifi.png',            left:30.0, build:buildWifiPage},
-    {key:'streaming',label:'Streaming',       tileLabel:'STREAMING',        icon:'tile-streaming.png',       left:40.2, build:buildStreaming},
-    {key:'lake',     label:'Lake Conroe',     tileLabel:'LAKE CONROE',      icon:'tile-lake.png',            left:50.6, build:buildLakePage},
-    {key:'food',     label:'Food and Beverage',tileLabel:'FOOD AND\nBEVERAGE',icon:'tile-food.png',            left:60.8, build:buildPlacesPage},
-    {key:'local',    label:'Local Favorites', tileLabel:'LOCAL\nFAVORITES',  icon:'tile-local-favorites.png', left:71.0, build:buildLocalPage}
+    {key:'about',    label:'About the Place', tileLabel:'ABOUT THE\nPLACE',  icon:'tile-about.png',           left:18.5, build:buildAboutPage},
+    {key:'legend',   label:'The Legend',      tileLabel:'THE\nLEGEND',      icon:'tile-legend.png',          left:27.55, build:buildLegendPage},
+    {key:'wifi',     label:'WiFi',            tileLabel:'WIFI',             icon:'tile-wifi.png',            left:36.6, build:buildWifiPage},
+    {key:'streaming',label:'Streaming',       tileLabel:'STREAMING',        icon:'tile-streaming.png',       left:45.65, build:buildStreaming},
+    {key:'lake',     label:'Lake Conroe',     tileLabel:'LAKE CONROE',      icon:'tile-lake.png',            left:54.7, build:buildLakePage},
+    {key:'food',     label:'Food and Beverage',tileLabel:'FOOD AND\nBEVERAGE',icon:'tile-food.png',            left:63.75, build:buildPlacesPage},
+    {key:'local',    label:'Local Favorites', tileLabel:'LOCAL\nFAVORITES',  icon:'tile-local-favorites.png', left:72.8, build:buildLocalPage}
   ];
 
   function init(c){
@@ -1159,6 +1188,67 @@
   }
 
   /* ----- modal builders ----- */
+  function htmlList(items){
+    var h='<ul class="about-list">';
+    (Array.isArray(items)?items:[]).forEach(function(item){
+      if(item)h+='<li>'+esc(item)+'</li>';
+    });
+    return h+'</ul>';
+  }
+
+  function buildAboutPage(c){
+    var hr=(c&&c.houseRules)||{};
+    var howTo=Array.isArray(c&&c.howTo)?c.howTo:[];
+    var safety=(c&&c.safety)||{};
+    var rules=Array.isArray(hr.rules)?hr.rules.filter(Boolean):[];
+    var steps=Array.isArray(hr.checkoutSteps)?hr.checkoutSteps.filter(Boolean):[];
+    var h='<section class="about">';
+    h+='<h2 class="about-title">About the Place</h2>';
+    h+='<p class="lede">House rules, how-tos, and safety notes for your stay.</p>';
+    h+='<div class="about-grid">';
+    h+='<div class="about-section"><h3>House Rules</h3>';
+    if(rules.length)h+=htmlList(rules);
+    if(hr.parking)h+='<p class="about-note">'+esc(hr.parking)+'</p>';
+    if(hr.trashDay)h+='<p class="about-note">'+esc(hr.trashDay)+'</p>';
+    h+='</div><div class="about-section"><h3>Check-in and Checkout</h3>';
+    var times=[];
+    if(hr.checkInTime)times.push('Check in '+hr.checkInTime);
+    if(hr.checkoutTime)times.push('Check out '+hr.checkoutTime);
+    if(times.length)h+=htmlList(times);
+    if(steps.length){
+      h+='<p class="about-note">Before you leave</p>';
+      h+=htmlList(steps);
+    }
+    h+='</div></div>';
+    if(howTo.length){
+      h+='<div class="about-section full"><h3>How To</h3><div class="about-grid">';
+      howTo.forEach(function(item){
+        if(!item||!item.title)return;
+        h+='<div class="howto-item"><h4>'+esc(item.title)+'</h4>';
+        if(Array.isArray(item.steps)&&item.steps.length)h+=htmlList(item.steps);
+        h+='</div>';
+      });
+      h+='</div></div>';
+    }
+    var safetyRows=[];
+    if(safety.emergencyNumber)safetyRows.push({label:'Emergency',value:safety.emergencyNumber});
+    if(safety.hospital)safetyRows.push({label:'Hospital',value:safety.hospital});
+    if(safety.address)safetyRows.push({label:'Address',value:safety.address});
+    if(safety.hostName)safetyRows.push({label:'Host',value:safety.hostName});
+    if(safety.hostPhone)safetyRows.push({label:'Host phone',value:safety.hostPhone});
+    if(safety.extinguisher)safetyRows.push({label:'Fire extinguisher',value:safety.extinguisher});
+    if(safety.breaker)safetyRows.push({label:'Breaker box',value:safety.breaker});
+    if(safety.shutoff)safetyRows.push({label:'Water and gas shutoff',value:safety.shutoff});
+    if(safetyRows.length){
+      h+='<div class="about-section full safety"><h3>Safety</h3><div class="safety-grid">';
+      safetyRows.forEach(function(row){
+        h+='<div class="safety-item"><b>'+esc(row.label)+'</b><span>'+esc(row.value)+'</span></div>';
+      });
+      h+='</div></div>';
+    }
+    return h+'</section>';
+  }
+
   function buildLegendPage(c){
     var s=(c&&c.story)||{};
     var h='<h2 class="legend-title">'+esc(s.title||'The Legend of Shoreline Social House')+'</h2>';
@@ -1298,6 +1388,10 @@
     }
   }
 
+  function resetModalScroll(){
+    try{modalBody.scrollTo({top:0,behavior:'instant'});}catch(e){modalBody.scrollTop=0;}
+  }
+
   function openModal(panel,trigger){
     lastTrigger=trigger||null;
     currentPanel=panel;
@@ -1306,7 +1400,7 @@
     /* reset AFTER the modal is displayed: scrollTop is ignored while it is display:none,
        which used to carry the previous panel's scroll offset into the next one. Instant,
        so the smooth D-pad scrolling does not animate the reset. */
-    try{modalBody.scrollTo({top:0,behavior:'instant'});}catch(e){modalBody.scrollTop=0;}
+    resetModalScroll();
     modal.setAttribute('aria-hidden','false');
     modal.setAttribute('aria-labelledby','modalTitle');
     document.getElementById('modalClose').setAttribute('aria-label','Close '+(panel.label||'panel'));

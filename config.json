@@ -14,7 +14,7 @@
   },
 
   "story": {
-    "_comment": "Shoreline Social House origin tale (by James's wife). Rendered at the top of the About the Place panel. Each block is either a paragraph (p) or a script pull-quote (q).",
+    "_comment": "Shoreline Social House origin tale (by James's wife). Opened from The Legend home tile. Each block is either a paragraph (p) or a script pull-quote (q).",
     "title": "The Legend of Shoreline Social House",
     "house": "assets/art/house.png",
     "blocks": [
