@@ -74,6 +74,7 @@
   .cloud-art[hidden]{display:none}
   .wx-svg{width:44%;height:auto;overflow:visible}
   .wx-svg .ink{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .wx-svg .wx-cloud{fill:var(--ground)}
   .wx-svg .sun{fill:none;stroke:var(--awning);stroke-width:2.6;stroke-linecap:round}
   .cloud-cap{font-family:var(--type);color:var(--green);font-size:clamp(13px,1.4cqw,28px);margin-top:.1em;line-height:1}
   .cloud-cap .wx-cond{display:block;font-size:clamp(12px,1.25cqw,26px);line-height:1.1;margin-top:.2em;white-space:nowrap}
@@ -1102,7 +1103,7 @@
      doodle stays as the neutral art when there is no reading to draw. */
   var WX_SUN='<circle class="sun" cx="{x}" cy="{y}" r="{r}"/>'+
     '<path class="sun" d="M{x} {y1}v-5M{x} {y2}v5M{x1} {y}h-5M{x2} {y}h5M{xa} {ya}l-3.5-3.5M{xb} {yb}l3.5 3.5M{xb} {ya}l3.5-3.5M{xa} {yb}l-3.5 3.5"/>';
-  var WX_CLOUD='<path class="ink" d="M20 40h26a8.5 8.5 0 0 0 1.6-16.9A12 12 0 0 0 24.5 20 8 8 0 0 0 20 40z"/>';
+  var WX_CLOUD='<path class="ink wx-cloud" d="M20 40h26a8.5 8.5 0 0 0 1.6-16.9A12 12 0 0 0 24.5 20 8 8 0 0 0 20 40z"/>';
   function wxSun(x,y,r){
     var ray=r+4, diag=(r+2.5)*0.7071;
     return WX_SUN.replace(/\{x\}/g,x).replace(/\{y\}/g,y).replace(/\{r\}/g,r)
