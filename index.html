@@ -111,7 +111,10 @@
      sit between the gators at 1920x1080. */
   .tile{position:absolute;top:53%;width:8.4%;display:flex;flex-direction:column;align-items:center;
         gap:clamp(8px,.55cqw,12px);background:transparent;border:0;padding:0;cursor:pointer}
-  .tile .ic{width:100%;height:auto;display:block;border-radius:12px}
+  .tile-art{display:block;width:100%;color:var(--green)}
+  .tile .ic{width:100%;height:auto;display:block}
+  /* The PNG crops omit the lower frame. Close it without clipping the original art. */
+  .tile-edge{display:block;width:100%;height:auto;margin-top:-3%;overflow:visible}
   .tile .lb{font-family:var(--type);font-weight:bold;font-size:clamp(16px,1.2cqw,46px);
             margin-top:clamp(4px,.3cqw,10px);
             letter-spacing:.01em;white-space:pre-line;color:var(--ink);
@@ -361,7 +364,7 @@
     .t-in,.t-out{position:static;order:-3;width:100%;height:60px;font-size:16px}
     .t-msg{position:static;order:-2;grid-column:1/-1;width:100%;height:auto;min-height:80px;font-size:14px;line-height:1.3}
     .tile{position:relative;left:auto!important;top:auto;width:100%;gap:10px;padding:8px}
-    .tile .ic{width:100%;max-width:116px}
+    .tile-art{max-width:116px}
     .tile .lb{font-size:17px;line-height:1.2}
     .cloud{position:static;order:1;width:100%;max-width:180px;height:148px;padding:18px;justify-self:center}
     .cloud-qr{grid-column:1/-1;width:180px;justify-self:center}
@@ -1055,13 +1058,18 @@
 
   /* ----- the welcome screen ----- */
   function renderHotspots(){
+    var bottomEdge='<svg class="tile-edge" viewBox="0 0 100 5" aria-hidden="true" focusable="false">'+
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'+
+      '<path stroke-width=".55" d="M2.9 .3 3.1 4.1 16.4 4.4 28.2 3.8 43.6 4.2 58.3 3.9 74.5 4.3 87.7 4 97.8 4.3 98.1 .3"/>'+
+      '<path stroke-width=".25" opacity=".7" d="M3.3 .5 2.8 3.8 18 3.9 34 4.5 51 4.1 66 4.5 82 3.8 98.2 4 97.7 .5"/>'+
+      '</g></svg>';
     PANELS.forEach(function(panel){
       var b=document.createElement('button');
       b.className='tile';
       b.setAttribute('aria-label',panel.label);
       b.setAttribute('data-key',panel.key);
       b.style.left=panel.left+'%';
-      b.innerHTML='<img class="ic" src="assets/art/'+panel.icon+'" alt="">'+
+      b.innerHTML='<span class="tile-art" aria-hidden="true"><img class="ic" src="assets/art/'+panel.icon+'" alt="">'+bottomEdge+'</span>'+
                   '<span class="lb">'+esc(panel.tileLabel||panel.label)+'</span>';
       b.addEventListener('click',function(){openModal(panel,b);});
       stage.appendChild(b);
