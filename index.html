@@ -522,37 +522,452 @@
     setTimeout(run,1000);
   })();
 
-  /* This embedded configuration is intentionally generic and contains no guest,
-     Wi-Fi, street-address, host, or phone data. It keeps the TV useful when the
-     tracked public configuration is temporarily unavailable. */
+  /* Complete public guide, available before any network request. Refresh this
+     snapshot with sync-public-guide.cjs when config.json changes. Private guest,
+     Wi-Fi, address and host values still come only from this device's storage. */
+  /* BEGIN PUBLIC GUIDE SNAPSHOT */
   var SAFE_CONFIG={
-    guest:{name:'',checkIn:'',checkOut:''},
-    property:{
-      name:'Shoreline Social House',
-      welcomeMessage:"Kick off your shoes, pour something cold, and settle in. The lake isn't going anywhere, and neither should you."
+    "guest": {
+      "name": "",
+      "checkIn": "",
+      "checkOut": ""
     },
-    story:{title:'The Legend of Shoreline Social House',house:'assets/art/house.png',blocks:[]},
-    location:{label:'Lake Conroe, TX',lat:30.41,lon:-95.59},
-    wifi:{ssid:'',password:'',encryption:'WPA'},
-    streaming:[
-      {label:'Netflix',package:'com.netflix.ninja'},
-      {label:'YouTube',package:'com.google.android.youtube.tv'},
-      {label:'Disney+',package:'com.disney.disneyplus'},
-      {label:'Prime Video',package:'com.amazon.amazonvideo.livingroom'},
-      {label:'Max',package:'com.wbd.stream'},
-      {label:'Hulu',package:'com.hulu.livingroomplus'},
-      {label:'Peacock',package:'com.peacocktv.peacockandroid'},
-      {label:'Spotify',package:'com.spotify.tv.android'},
-      {label:'Apple TV',package:'com.apple.atve.androidtv.appletv'},
-      {label:'Tubi (free)',package:'com.tubitv'},
-      {label:'Pluto (free)',package:'tv.pluto.android'}
+    "wifi": {
+      "ssid": "",
+      "password": "",
+      "encryption": "WPA"
+    },
+    "property": {
+      "name": "Shoreline Social House",
+      "welcomeMessage": "Kick off your shoes, pour something cold, and settle in. The lake isn't going anywhere, and neither should you."
+    },
+    "story": {
+      "title": "The Legend of Shoreline Social House",
+      "house": "assets/art/house.png",
+      "blocks": [
+        {
+          "p": "Picture it: a sweltering July afternoon in 1962, long before Lake Conroe was filled. The pines ran straight down to a slow, winding bayou, and just around the bend churned a riverboat called The Coral Belle, captained by a Palm Beach socialite named Vivienne LaFleur, who had set out for Galveston three days earlier and absolutely refused to admit she was lost."
+        },
+        {
+          "p": "When The Coral Belle ran aground in the reeds at sunset, Vivienne did the only sensible thing:"
+        },
+        {
+          "q": "She decided to throw a party."
+        },
+        {
+          "p": "There was just one problem: no guests."
+        },
+        {
+          "p": "That was when she spotted him: a great old alligator soaking up the last of the sun in the reeds, regarding her with what she chose to interpret as polite interest. She named him Beauregard on the spot, decided he was a thousand years old, and pictured him in a bow tie woven from water lilies and a dinner jacket trimmed in heron feathers. He was, she announced to the empty deck, her guest of honor. Beauregard did not disagree."
+        },
+        {
+          "p": "Then came the second arrivals: a pair of kissing spotted bass puckering at the surface just off the bow. She named them Pearl and Pepper, dressed them in her mind in matching coral silk with tiny pearl earrings, and crowned them the official greeters of The Coral Belle. They drifted through the lily pads like debutantes working the room."
+        },
+        {
+          "p": "At the height of the evening, Vivienne stood on the prow, lifted her glass, and declared:"
+        },
+        {
+          "q": "Darlings. Every shoreline deserves a social house."
+        },
+        {
+          "p": "When Lake Conroe was filled in 1973, The Coral Belle sank gently to the bottom, but Vivienne's spirit floated up and settled into a little townhome near the lake. Beauregard watches over the bookshelf now, still in his lily-pad bow tie. Pearl and Pepper preside over the kitchen, still in their coral silk. And the door is still open to anyone Vivienne would have invited - which, as it turns out, was everyone."
+        },
+        {
+          "q": "Welcome. Vivienne would have wanted it this way."
+        }
+      ]
+    },
+    "location": {
+      "label": "Lake Conroe, TX",
+      "lat": 30.41,
+      "lon": -95.59
+    },
+    "streaming": [
+      {
+        "label": "Netflix",
+        "package": "com.netflix.ninja",
+        "color": "#E50914"
+      },
+      {
+        "label": "YouTube",
+        "package": "com.google.android.youtube.tv",
+        "color": "#FF0000"
+      },
+      {
+        "label": "Disney+",
+        "package": "com.disney.disneyplus",
+        "color": "#113CCF"
+      },
+      {
+        "label": "Prime Video",
+        "package": "com.amazon.amazonvideo.livingroom",
+        "color": "#1A98FF"
+      },
+      {
+        "label": "Max",
+        "package": "com.wbd.stream",
+        "color": "#3A0CA3"
+      },
+      {
+        "label": "Hulu",
+        "package": "com.hulu.livingroomplus",
+        "color": "#1CE783"
+      },
+      {
+        "label": "Peacock",
+        "package": "com.peacocktv.peacockandroid",
+        "color": "#8A4FFF"
+      },
+      {
+        "label": "Spotify",
+        "package": "com.spotify.tv.android",
+        "color": "#1DB954"
+      },
+      {
+        "label": "Apple TV",
+        "package": "com.apple.atve.androidtv.appletv",
+        "color": "#1A1A1A"
+      },
+      {
+        "label": "Tubi (free)",
+        "package": "com.tubitv",
+        "color": "#7408FF"
+      },
+      {
+        "label": "Pluto (free)",
+        "package": "tv.pluto.android",
+        "color": "#0B0B45"
+      }
     ],
-    houseRules:{checkInTime:'4:00 PM',checkoutTime:'11:00 AM',checkoutSteps:[],rules:[],parking:'',trashDay:'',contactNote:''},
-    howTo:[],pets:{intro:'',rules:[]},
-    localGuide:{mapUrl:'',intro:'',picks:[],walden:{intro:'',cardNote:'',boatNote:'',amenitiesUrl:'',amenities:[],mapCaption:'',mapKey:[]}},
-    placesToEat:[],lakeConroe:[],localFavorites:[],
-    safety:{address:'',emergencyNumber:'911',hospital:'',hostName:'',hostPhone:'',extinguisher:'',breaker:'',shutoff:''}
+    "houseRules": {
+      "checkInTime": "4:00 PM",
+      "checkoutTime": "11:00 AM",
+      "checkoutSteps": [
+        "Put all trash in the outdoor bin by the front door",
+        "Start the dishwasher before you leave",
+        "Turn off all lights",
+        "Lock all doors and windows",
+        "Leave the house keys and the Walden key card where you found them"
+      ],
+      "rules": [
+        "Quiet hours 10 PM to 8 AM",
+        "No smoking indoors",
+        "No parties or events",
+        "Only registered guests",
+        "Pets only with prior approval"
+      ],
+      "parking": "Park in the driveway. Please don't block the street or your neighbors.",
+      "contactNote": "Something spill or break? Message us through your booking app. We would rather know than find it later."
+    },
+    "howTo": [
+      {
+        "title": "Thermostat",
+        "steps": [
+          "On the living room wall",
+          "Tap up or down to adjust",
+          "Please keep it between 68 and 75"
+        ]
+      },
+      {
+        "title": "Coffee Maker",
+        "steps": [
+          "Filters and coffee are in the cabinet above",
+          "Fill the water to the line",
+          "Press brew"
+        ]
+      },
+      {
+        "title": "Washer & Dryer",
+        "steps": [
+          "Detergent is in the laundry area",
+          "Normal cycle works for most loads",
+          "Clean the lint trap after drying"
+        ]
+      },
+      {
+        "title": "Trash & Recycling",
+        "steps": [
+          "Bags are under the kitchen sink",
+          "Put tied trash bags in the outdoor bin by the front door"
+        ]
+      },
+      {
+        "title": "Kitchen",
+        "steps": [
+          "Use the antique china and the nice cocktail glasses",
+          "Everything is dishwasher safe",
+          "Please keep the china out of the microwave"
+        ]
+      },
+      {
+        "title": "Grill & Outdoor Gear",
+        "steps": [
+          "Turn off the propane at the bottle",
+          "Clean the grill after use",
+          "Let it cool completely before covering",
+          "Return outdoor storage items before checkout",
+          "If you use inflatables, deflate them and let them dry before storing"
+        ]
+      }
+    ],
+    "pets": {
+      "intro": "In The Pawlor next to the bar you will find a bed, food and water bowls, a few treats, a leash, and waste bags.",
+      "rules": [
+        "Clean up after your pup on the property and in the neighborhood",
+        "Wipe muddy paws before coming back inside",
+        "Do not leave pets unattended in the home unless they are crated",
+        "If a dog naps on the couch, use a pet blanket",
+        "Keep dogs leashed on walks, as required throughout Walden",
+        "Be mindful of barking for the neighbors",
+        "Unexpected accidents, extra shedding, damage, or extra cleaning may mean extra charges"
+      ]
+    },
+    "localGuide": {
+      "mapUrl": "https://www.google.com/maps/search/restaurants+%26+things+to+do/@30.41,-95.59,13z",
+      "intro": "Scan to explore the area on your phone",
+      "picks": [
+        {
+          "name": "Monty's Lighthouse",
+          "note": "Cajun seafood + Lake Conroe views · 12 min"
+        },
+        {
+          "name": "Papa's on the Lake",
+          "note": "Lakeside seafood, live music, pool · 12 min"
+        },
+        {
+          "name": "Fajita Jack's",
+          "note": "Lakeside Tex-Mex with a boat slip · 10 min"
+        },
+        {
+          "name": "Bar-A-BBQ",
+          "note": "Texas Monthly Top 50 brisket · 12 min"
+        },
+        {
+          "name": "The Pizza Shack",
+          "note": "Local pizza staple since 1985 · 10 min"
+        },
+        {
+          "name": "PJ's Coffee",
+          "note": "Lakeside drive-thru, cold brew + beignets · 8 min"
+        },
+        {
+          "name": "Kroger Marketplace",
+          "note": "Full grocery, pharmacy + fuel · 12 min"
+        },
+        {
+          "name": "April Plaza Marina",
+          "note": "Pontoon + Sea-Doo rentals · 10 min"
+        },
+        {
+          "name": "Lake Conroe Park",
+          "note": "Biggest beach on the lake, swimming · 12 min"
+        },
+        {
+          "name": "Historic Downtown Montgomery",
+          "note": "Walkable 1800s shops + dining · 15 min"
+        },
+        {
+          "name": "Bernhardt Winery",
+          "note": "Sunday sunset lawn concerts · 25 min"
+        },
+        {
+          "name": "Bar Lago",
+          "note": "Lakeside cocktails + live music · 12 min"
+        }
+      ],
+      "walden": {
+        "intro": "You can use many of Walden's private amenities with the guest key card in the townhouse.",
+        "cardNote": "A $25 replacement fee applies to lost or unreturned cards.",
+        "boatNote": "If you registered a boat or personal watercraft before arrival, Walden boat tags will be waiting at check-in. Trailers left overnight at either Walden boat ramp need that tag, or they can be towed.",
+        "amenitiesUrl": "https://www.waldenonlakeconroe.com/web/pages/amenities",
+        "amenities": [
+          "North and South Boat Ramps",
+          "Yacht Club Pool, including the splash pad and kiddie pools",
+          "Fitness Center",
+          "Fitness Pool (lap pool)",
+          "Racquet Center with tennis and pickleball courts",
+          "Playground",
+          "Dog Park"
+        ],
+        "mapCaption": "Numbered places around Walden. 1 is Shoreline Social House.",
+        "mapKey": [
+          "Shoreline Social House",
+          "North Boat Ramp",
+          "Walden Admin Bldg.",
+          "Madeley Park",
+          "Walden's Lakeview Dining & Venue",
+          "Flag Plaza",
+          "Pool / Splash Pad",
+          "Breakwater Grille",
+          "Dog Park",
+          "Playground",
+          "Hike & Bike Trail",
+          "South Boat Ramp",
+          "Fitness / Racquet Center / Fitness Pool"
+        ]
+      }
+    },
+    "placesToEat": [
+      {
+        "name": "Monty's Lighthouse",
+        "note": "New Orleans-style Cajun seafood with big lake views and boat slips at Waterpoint",
+        "drive": "12 min"
+      },
+      {
+        "name": "Papa's on the Lake",
+        "note": "Lakeside party spot since 1996: fresh seafood, full bar, adult pool, weekend live music",
+        "drive": "14 min"
+      },
+      {
+        "name": "Fajita Jack's",
+        "note": "Lakeside Tex-Mex with its own boat slip, big margaritas, and a waterview patio",
+        "drive": "12 min"
+      },
+      {
+        "name": "Bar-A-BBQ",
+        "note": "Texas Monthly Top 50 brisket: smoked meats and jalapeno-cheese sausage in Montgomery",
+        "drive": "14 min"
+      },
+      {
+        "name": "The Pizza Shack",
+        "note": "Family-owned 40 years, scratch-made Italian-American pizza and pasta",
+        "drive": "10 min"
+      },
+      {
+        "name": "Crust Pizza Co.",
+        "note": "Wood-fired pizzas at Waterpoint, easy to grab on a lake day",
+        "drive": "12 min"
+      },
+      {
+        "name": "Bar Lago",
+        "note": "Lake Conroe's lakeside cocktail bar at Waterpoint: craft drinks, small bites, live music",
+        "drive": "12 min"
+      },
+      {
+        "name": "LandShark Bar & Grill",
+        "note": "Waterfront deck and sand beach at Margaritaville: frozen drinks and lake views",
+        "drive": "12 min"
+      },
+      {
+        "name": "PJ's Coffee",
+        "note": "New Orleans coffee with a drive-thru right here in Walden: your morning stop",
+        "drive": "6 min"
+      },
+      {
+        "name": "Conroe Lake House",
+        "note": "14954 Hwy 105 W, Montgomery"
+      }
+    ],
+    "lakeConroe": [
+      {
+        "name": "Safe Harbor Walden Marina",
+        "note": "Right here in Walden: rent pontoons, fishing boats, or jet skis minutes from the house",
+        "drive": "5 min"
+      },
+      {
+        "name": "April Plaza Marina",
+        "note": "Hwy 105 marina with Sea-Doo and pontoon rentals, fuel, and a boat-side store",
+        "drive": "13 min"
+      },
+      {
+        "name": "Lake Conroe Beach Park",
+        "note": "Sandy swim area, picnic tables, and kayak rentals. No boat ramp or outside watercraft launches.",
+        "drive": "13 min"
+      },
+      {
+        "name": "Scott's Ridge Recreation Area",
+        "note": "13274 Scotts Ridge Rd, Montgomery"
+      },
+      {
+        "name": "1097 Watersports",
+        "note": "Jet-ski and boat rentals plus guided sunset cruises on the open water",
+        "drive": "13 min"
+      },
+      {
+        "name": "Fajita Jack's",
+        "note": "Tex-Mex with its own boat slip: pull up by boat for margaritas on the water",
+        "drive": "12 min"
+      },
+      {
+        "name": "Bar Lago",
+        "note": "Lakeside cocktail bar at Waterpoint Marina: craft drinks and live music",
+        "drive": "12 min"
+      },
+      {
+        "name": "LandShark Bar & Grill",
+        "note": "Waterfront deck and sand beach at Margaritaville Resort",
+        "drive": "12 min"
+      },
+      {
+        "name": "The Fish Dude's Guide Service",
+        "note": "Licensed guide since 1997: trophy striper, catfish, and crappie, gear included",
+        "drive": "meet at marina"
+      }
+    ],
+    "localFavorites": [
+      {
+        "name": "Monty's Lighthouse",
+        "note": "New Orleans-style Cajun seafood with big Lake Conroe views at Waterpoint",
+        "drive": "12 min"
+      },
+      {
+        "name": "Papa's on the Lake",
+        "note": "Lakeside party spot since 1996: seafood, full bar, pool, weekend live music",
+        "drive": "14 min"
+      },
+      {
+        "name": "Bar-A-BBQ",
+        "note": "Texas Monthly Top 50 brisket and jalapeno-cheese sausage in downtown Montgomery",
+        "drive": "14 min"
+      },
+      {
+        "name": "The Pizza Shack",
+        "note": "Family-owned 40 years: scratch-made Italian-American pizza and pasta",
+        "drive": "10 min"
+      },
+      {
+        "name": "Crust Pizza Co.",
+        "note": "Crowd-pleasing wood-fired pizzas at Waterpoint",
+        "drive": "12 min"
+      },
+      {
+        "name": "PJ's Coffee",
+        "note": "New Orleans coffee with a drive-thru right in Walden",
+        "drive": "6 min"
+      },
+      {
+        "name": "Kroger Marketplace",
+        "note": "Full-size grocery (6am-11pm) for cookout supplies, drinks, and fresh produce",
+        "drive": "13 min"
+      },
+      {
+        "name": "Bernhardt Winery",
+        "note": "Sunday sunset lawn concerts under century-old pecans, Texas wine and food trucks",
+        "drive": "28 min"
+      },
+      {
+        "name": "Historic Downtown Montgomery",
+        "note": "Birthplace of the Lone Star Flag: antiques, boutiques, wine bars, monthly market",
+        "drive": "13 min"
+      },
+      {
+        "name": "Northshore Park",
+        "note": "Free lakeside park in The Woodlands: playgrounds, fishing, volleyball, and kayak launch. No lake swimming.",
+        "drive": "30 min"
+      }
+    ],
+    "safety": {
+      "address": "",
+      "hostName": "",
+      "hostPhone": "",
+      "emergencyNumber": "911",
+      "hospital": "HCA Houston Healthcare Conroe, 504 Medical Center Blvd, Conroe (ER, about 25 min)",
+      "extinguisher": "Under the kitchen sink",
+      "breaker": "In the laundry room",
+      "shutoff": "In the front flowerbed"
+    }
   };
+  /* END PUBLIC GUIDE SNAPSHOT */
 
   if(/[?&]debug/i.test(location.search))document.body.classList.add('debug');
 
@@ -885,6 +1300,14 @@
     return true;
   }
 
+  // A partial response/cache must not erase content that ships with this release.
+  function coversGuide(value,expected){
+    if(Array.isArray(expected))return Array.isArray(value)&&value.length>=expected.length&&
+      expected.every(function(item,i){return coversGuide(value[i],item);});
+    if(isObj(expected))return isObj(value)&&Object.keys(expected).every(function(key){return coversGuide(value[key],expected[key]);});
+    if(typeof expected==='string')return typeof value==='string'&&(!expected.trim()||!!value.trim());
+    return typeof value===typeof expected;
+  }
   function sharedConfig(raw){
     if(!isObj(raw))return null;
     var safe=clone(raw);
@@ -892,6 +1315,8 @@
     safe.wifi=clone(SAFE_CONFIG.wifi);
     safe.safety=isObj(safe.safety)?safe.safety:{};
     ['address','hostName','hostPhone'].forEach(function(key){safe.safety[key]='';});
+    var result=normalizeConfig(safe);
+    if(result.issues.length||!coversGuide(result.config,normalizeConfig(SAFE_CONFIG).config))return null;
     return safe;
   }
   function readSharedConfig(){
@@ -903,8 +1328,8 @@
     clearTimeout(configRetryT);
     var baseFailed=false,deviceError='';
     fetchJsonRetry('config.json',2).then(function(base){
-      if(!isObj(base))throw new Error('invalid shared config');
       var safe=sharedConfig(base);
+      if(!safe)throw new Error('incomplete shared guide');
       try{localStorage.setItem(SHARED_CONFIG_KEY,JSON.stringify(safe));}catch(e){}
       return safe;
     }).catch(function(){
