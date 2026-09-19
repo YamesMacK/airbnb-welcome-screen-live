@@ -113,8 +113,9 @@
         gap:clamp(8px,.55cqw,12px);background:transparent;border:0;padding:0;cursor:pointer}
   .tile-art{display:block;width:100%;color:var(--green)}
   .tile .ic{width:100%;height:auto;display:block}
-  /* The PNG crops omit the lower frame. Close it without clipping the original art. */
-  .tile-edge{display:block;width:100%;height:auto;margin-top:-3%;overflow:visible}
+  /* Mirror the PNG's top strip to retain its broken, textured pencil border. */
+  .tile-edge{display:block;width:100%;aspect-ratio:20;margin-top:-3%;overflow:hidden;transform:scaleY(-1)}
+  .tile-edge img{display:block;width:100%;height:auto}
   .tile .lb{font-family:var(--type);font-weight:bold;font-size:clamp(16px,1.2cqw,46px);
             margin-top:clamp(4px,.3cqw,10px);
             letter-spacing:.01em;white-space:pre-line;color:var(--ink);
@@ -1058,18 +1059,15 @@
 
   /* ----- the welcome screen ----- */
   function renderHotspots(){
-    var bottomEdge='<svg class="tile-edge" viewBox="0 0 100 5" aria-hidden="true" focusable="false">'+
-      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'+
-      '<path stroke-width=".55" d="M2.9 .3 3.1 4.1 16.4 4.4 28.2 3.8 43.6 4.2 58.3 3.9 74.5 4.3 87.7 4 97.8 4.3 98.1 .3"/>'+
-      '<path stroke-width=".25" opacity=".7" d="M3.3 .5 2.8 3.8 18 3.9 34 4.5 51 4.1 66 4.5 82 3.8 98.2 4 97.7 .5"/>'+
-      '</g></svg>';
     PANELS.forEach(function(panel){
       var b=document.createElement('button');
       b.className='tile';
       b.setAttribute('aria-label',panel.label);
       b.setAttribute('data-key',panel.key);
       b.style.left=panel.left+'%';
-      b.innerHTML='<span class="tile-art" aria-hidden="true"><img class="ic" src="assets/art/'+panel.icon+'" alt="">'+bottomEdge+'</span>'+
+      var iconSrc='assets/art/'+panel.icon;
+      b.innerHTML='<span class="tile-art" aria-hidden="true"><img class="ic" src="'+iconSrc+'" alt="">'+
+                  '<span class="tile-edge"><img src="'+iconSrc+'" alt=""></span></span>'+
                   '<span class="lb">'+esc(panel.tileLabel||panel.label)+'</span>';
       b.addEventListener('click',function(){openModal(panel,b);});
       stage.appendChild(b);
