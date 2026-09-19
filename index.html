@@ -140,14 +140,15 @@
   .modal.open{display:flex}
   .modal-card{
     --modal-pad:clamp(20px,3vmin,80px);
-    position:relative; width:min(92vw,max(1180px,61.5vw)); max-height:90vh; overflow:hidden;
+    position:relative; display:flex; flex-direction:column;
+    width:92vw; height:90vh; max-height:100%; overflow:hidden;
     padding:0;
     color:var(--ink); background:var(--ground);
     border:clamp(2.5px,.13vw,5px) solid var(--ink); border-radius:clamp(18px,.94vw,36px);
     box-shadow:0 26px 60px rgba(40,15,145,.25);
   }
   #modalBody{
-    max-height:calc(90vh - 5px); overflow:auto;
+    flex:1; min-height:0; overflow:auto;
     padding:var(--modal-pad) clamp(92px,8.6vmin,184px);
     scrollbar-gutter:stable; scroll-padding-block:var(--modal-pad); scroll-behavior:smooth;
   }
