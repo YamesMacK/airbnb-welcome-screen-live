@@ -62,30 +62,45 @@
     "checkInTime": "4:00 PM",
     "checkoutTime": "11:00 AM",
     "checkoutSteps": [
-      "Load and start the dishwasher",
-      "Put trash in the bins outside",
-      "Turn off all lights and set the A/C to 78",
+      "Put all trash in the outdoor bin by the front door",
+      "Start the dishwasher before you leave",
+      "Turn off all lights",
       "Lock all doors and windows",
-      "Leave keys where you found them"
+      "Leave the house keys and the Walden key card where you found them"
     ],
     "rules": [
       "Quiet hours 10 PM to 8 AM",
       "No smoking indoors",
       "No parties or events",
-      "Maximum occupancy as listed in your reservation",
+      "Only registered guests",
       "Pets only with prior approval"
     ],
     "parking": "Park in the driveway. Please don't block the street or your neighbors.",
-    "trashDay": "Roll the bins to the curb the night before pickup."
+    "contactNote": "Something spill or break? Message us through your booking app. We would rather know than find it later."
   },
 
   "howTo": [
-    { "title": "Thermostat", "steps": ["On the hallway wall", "Tap up or down to adjust", "Please keep it between 68 and 78"] },
-    { "title": "TV Remote", "steps": ["This screen is home base", "Tap any app to start watching", "Press the round Home button to come back here"] },
+    { "title": "Thermostat", "steps": ["On the living room wall", "Tap up or down to adjust", "Please keep it between 68 and 75"] },
     { "title": "Coffee Maker", "steps": ["Filters and coffee are in the cabinet above", "Fill the water to the line", "Press brew"] },
     { "title": "Washer & Dryer", "steps": ["Detergent is in the laundry area", "Normal cycle works for most loads", "Clean the lint trap after drying"] },
-    { "title": "Trash & Recycling", "steps": ["Bags are under the kitchen sink", "Bins are outside by the garage", "Curb them the night before pickup"] }
+    { "title": "Trash & Recycling", "steps": ["Bags are under the kitchen sink", "Put tied trash bags in the outdoor bin by the front door"] },
+    { "title": "Kitchen", "steps": ["Use the antique china and the nice cocktail glasses", "Everything is dishwasher safe", "Please keep the china out of the microwave"] },
+    { "title": "Grill & Outdoor Gear", "steps": ["Turn off the propane at the bottle", "Clean the grill after use", "Let it cool completely before covering", "Return outdoor storage items before checkout", "If you use inflatables, deflate them and let them dry before storing"] }
   ],
+
+  "pets": {
+    "_comment": "Four-Legged Guests section on About. House rules still require prior approval; these describe an approved dog's stay.",
+    "intro": "In The Pawlor next to the bar you will find a bed, food and water bowls, a few treats, a leash, and waste bags.",
+    "rules": [
+      "Clean up after your pup on the property and in the neighborhood",
+      "Wipe muddy paws before coming back inside",
+      "Do not leave pets unattended in the home unless they are crated",
+      "If a dog naps on the couch, use a pet blanket",
+      "Keep dogs leashed on walks, as required throughout Walden",
+      "Be mindful of barking for the neighbors",
+      "Unexpected accidents, extra shedding, damage, or extra cleaning may mean extra charges"
+    ]
+  },
 
   "localGuide": {
     "mapUrl": "https://www.google.com/maps/search/restaurants+%26+things+to+do/@30.41,-95.59,13z",
@@ -103,7 +118,39 @@
       { "name": "Historic Downtown Montgomery", "note": "Walkable 1800s shops + dining · 15 min" },
       { "name": "Bernhardt Winery", "note": "Sunday sunset lawn concerts · 25 min" },
       { "name": "Bar Lago", "note": "Lakeside cocktails + live music · 12 min" }
-    ]
+    ],
+    "walden": {
+      "_comment": "Around Walden block on Local Favorites. Public amenities page URL; key-card return itself lives on the About checkout list.",
+      "intro": "You can use many of Walden's private amenities with the guest key card in the townhouse.",
+      "cardNote": "A $25 replacement fee applies to lost or unreturned cards.",
+      "boatNote": "If you registered a boat or personal watercraft before arrival, Walden boat tags will be waiting at check-in. Trailers left overnight at either Walden boat ramp need that tag, or they can be towed.",
+      "amenitiesUrl": "https://www.waldenonlakeconroe.com/web/pages/amenities",
+      "amenities": [
+        "North and South Boat Ramps",
+        "Yacht Club Pool, including the splash pad and kiddie pools",
+        "Fitness Center",
+        "Fitness Pool (lap pool)",
+        "Racquet Center with tennis and pickleball courts",
+        "Playground",
+        "Dog Park"
+      ],
+      "mapCaption": "Numbered places around Walden. 1 is Shoreline Social House.",
+      "mapKey": [
+        "Shoreline Social House",
+        "North Boat Ramp",
+        "Walden Admin Bldg.",
+        "Madeley Park",
+        "Walden's Lakeview Dining & Venue",
+        "Flag Plaza",
+        "Pool / Splash Pad",
+        "Breakwater Grille",
+        "Dog Park",
+        "Playground",
+        "Hike & Bike Trail",
+        "South Boat Ramp",
+        "Fitness / Racquet Center / Fitness Pool"
+      ]
+    }
   },
 
   "placesToEat": [
@@ -115,13 +162,15 @@
     { "name": "Crust Pizza Co.", "note": "Wood-fired pizzas at Waterpoint, easy to grab on a lake day", "drive": "12 min" },
     { "name": "Bar Lago", "note": "Lake Conroe's lakeside cocktail bar at Waterpoint: craft drinks, small bites, live music", "drive": "12 min" },
     { "name": "LandShark Bar & Grill", "note": "Waterfront deck and sand beach at Margaritaville: frozen drinks and lake views", "drive": "12 min" },
-    { "name": "PJ's Coffee", "note": "New Orleans coffee with a drive-thru right here in Walden: your morning stop", "drive": "6 min" }
+    { "name": "PJ's Coffee", "note": "New Orleans coffee with a drive-thru right here in Walden: your morning stop", "drive": "6 min" },
+    { "name": "Conroe Lake House", "note": "14954 Hwy 105 W, Montgomery" }
   ],
 
   "lakeConroe": [
     { "name": "Safe Harbor Walden Marina", "note": "Right here in Walden: rent pontoons, fishing boats, or jet skis minutes from the house", "drive": "5 min" },
     { "name": "April Plaza Marina", "note": "Hwy 105 marina with Sea-Doo and pontoon rentals, fuel, and a boat-side store", "drive": "13 min" },
-    { "name": "Lake Conroe Park", "note": "Largest public beach on the lake: sandy swim area, picnic tables, and a boat ramp", "drive": "13 min" },
+    { "name": "Lake Conroe Beach Park", "note": "Sandy swim area, picnic tables, and kayak rentals. No boat ramp or outside watercraft launches.", "drive": "13 min" },
+    { "name": "Scott's Ridge Recreation Area", "note": "13274 Scotts Ridge Rd, Montgomery" },
     { "name": "1097 Watersports", "note": "Jet-ski and boat rentals plus guided sunset cruises on the open water", "drive": "13 min" },
     { "name": "Fajita Jack's", "note": "Tex-Mex with its own boat slip: pull up by boat for margaritas on the water", "drive": "12 min" },
     { "name": "Bar Lago", "note": "Lakeside cocktail bar at Waterpoint Marina: craft drinks and live music", "drive": "12 min" },
@@ -139,7 +188,7 @@
     { "name": "Kroger Marketplace", "note": "Full-size grocery (6am-11pm) for cookout supplies, drinks, and fresh produce", "drive": "13 min" },
     { "name": "Bernhardt Winery", "note": "Sunday sunset lawn concerts under century-old pecans, Texas wine and food trucks", "drive": "28 min" },
     { "name": "Historic Downtown Montgomery", "note": "Birthplace of the Lone Star Flag: antiques, boutiques, wine bars, monthly market", "drive": "13 min" },
-    { "name": "Northshore Park", "note": "Free lakeside park in The Woodlands: boardwalk, swim beach, kayak launch, sunsets", "drive": "30 min" }
+    { "name": "Northshore Park", "note": "Free lakeside park in The Woodlands: playgrounds, fishing, volleyball, and kayak launch. No lake swimming.", "drive": "30 min" }
   ],
 
   "safety": {
@@ -148,8 +197,8 @@
     "hospital": "HCA Houston Healthcare Conroe, 504 Medical Center Blvd, Conroe (ER, about 25 min)",
     "hostName": "",
     "hostPhone": "",
-    "extinguisher": "Under the kitchen sink (please confirm)",
-    "breaker": "In the garage (please confirm)",
-    "shutoff": "Water and gas shutoffs in the garage / exterior (please confirm)"
+    "extinguisher": "Under the kitchen sink",
+    "breaker": "In the laundry room",
+    "shutoff": "In the front flowerbed"
   }
 }

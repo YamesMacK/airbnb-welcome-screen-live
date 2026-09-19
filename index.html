@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Shoreline Social House</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="assets/fonts/Themysion.ttf" as="font" type="font/ttf" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/special-elite-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  @font-face{font-family:'Special Elite';font-style:normal;font-weight:400;font-display:swap;src:url('assets/fonts/special-elite-latin.woff2') format('woff2')}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 700;font-display:swap;src:url('assets/fonts/inter-latin.woff2') format('woff2')}
   /* her real Canva signature font, self-hosted (James supplied the file) */
   @font-face{
     font-family:'Themysion';
@@ -77,7 +77,8 @@
   .wx-svg .wx-cloud{fill:var(--ground)}
   .wx-svg .sun{fill:none;stroke:var(--awning);stroke-width:2.6;stroke-linecap:round}
   .cloud-cap{font-family:var(--type);color:var(--green);font-size:clamp(13px,1.4cqw,28px);margin-top:.1em;line-height:1}
-  .cloud-cap .wx-cond{display:block;font-size:clamp(12px,1.25cqw,26px);line-height:1.1;margin-top:.2em;white-space:nowrap}
+  .cloud-cap{width:100%}
+  .cloud-cap .wx-cond{display:block;font-size:clamp(12px,1.25cqw,26px);line-height:1.1;margin-top:.2em;white-space:normal;overflow-wrap:break-word}
   .cloud-awn{width:50%;height:auto;margin-bottom:.35em;pointer-events:none;flex:0 0 auto}
   .cloud-times{display:flex;flex-direction:column;align-items:center;gap:.22em;width:100%;
                font-family:var(--type);font-size:clamp(12px,1.25cqw,26px);line-height:1.1}
@@ -109,7 +110,7 @@
      Seven tiles are a slightly tighter row than her original six so they still
      sit between the gators at 1920x1080. */
   .tile{position:absolute;top:53%;width:8.4%;display:flex;flex-direction:column;align-items:center;
-        gap:.02em;background:transparent;border:0;padding:0;cursor:pointer}
+        gap:clamp(8px,.55cqw,12px);background:transparent;border:0;padding:0;cursor:pointer}
   .tile .ic{width:100%;height:auto;display:block;border-radius:12px}
   .tile .lb{font-family:var(--type);font-weight:bold;font-size:clamp(16px,1.2cqw,46px);
             letter-spacing:.01em;white-space:pre-line;color:var(--ink);
@@ -118,6 +119,7 @@
   .tile::after{content:"";position:absolute;inset:-8px -8px -6px;border-radius:16px;pointer-events:none}
   .tile:focus{outline:none}
   .tile:focus::after{box-shadow:0 0 0 3px var(--paper),0 0 0 7px var(--ink)}
+  body.focus-idle .tile:focus::after{box-shadow:none}
 
   /* debug: append ?debug to outline the live-text boxes + tile icons */
   body.debug .t{outline:1.5px dashed rgba(0,110,255,.8)}
@@ -181,13 +183,13 @@
     font-size:clamp(44px,5.4vmin,132px); line-height:1; color:var(--ink);
     -webkit-text-stroke:.35px currentColor; paint-order:stroke fill;
   }
-  .modal-card .lede{ font-family:var(--sans); color:var(--pencil); font-size:clamp(16px,1.7vmin,40px); margin:0 0 clamp(10px,1.8vmin,40px); }
+  .modal-card .lede{ font-family:var(--sans); color:var(--ink); font-size:clamp(16px,1.7vmin,40px); margin:0 0 clamp(10px,1.8vmin,40px); }
   .guide{ list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px); }
   .guide li{ position:relative; padding:0 0 clamp(7px,1.1vmin,12px); border-bottom:1.5px dashed rgba(40,15,145,.22); }
   .guide .gh{ display:flex; align-items:baseline; gap:10px; }
   .guide b{ flex:1 1 auto; min-width:0; font-family:var(--sans); font-weight:700; color:var(--ink); font-size:clamp(18px,1.85vmin,44px); line-height:1.2; }
   .guide .drive{ flex:0 0 auto; white-space:nowrap; font-style:normal; font-family:var(--type); color:var(--green); font-size:clamp(13px,1.3vmin,32px); }
-  .guide span{ display:block; font-family:var(--sans); color:var(--pencil); font-size:clamp(16px,1.7vmin,36px); line-height:1.35; margin-top:.15em; }
+  .guide span{ display:block; font-family:var(--sans); color:var(--ink); font-size:clamp(16px,1.7vmin,36px); line-height:1.35; margin-top:.15em; }
   .map-row{ display:flex; align-items:center; gap:clamp(14px,2.4vmin,34px); margin-top:clamp(10px,1.6vmin,24px); }
   .map-row .lede{ margin:0; }
 
@@ -218,15 +220,27 @@
     padding:0 0 clamp(7px,1.1vmin,12px);border-bottom:1.5px dashed rgba(40,15,145,.22);color:var(--ink);
   }
   .about-note{
-    font-family:var(--sans);color:var(--pencil);font-size:clamp(16px,1.7vmin,36px);
+    font-family:var(--sans);color:var(--ink);font-size:clamp(16px,1.7vmin,36px);
     line-height:1.35;margin:clamp(8px,1.2vmin,16px) 0 0;
   }
+  /* section body copy (Four-Legged Guests, Around Walden): same ink and weight as the lists */
+  .about-copy{
+    font-family:var(--sans);color:var(--ink);font-size:clamp(16px,1.7vmin,36px);
+    line-height:1.35;margin:0 0 clamp(8px,1.2vmin,16px);
+  }
+  .about-list.two-col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px)}
+  .about-section.walden{margin-bottom:clamp(16px,2.2vmin,32px)}
+  .about-section.walden .about-list{margin-top:clamp(10px,1.6vmin,24px)}
+  .walden-map{margin:clamp(12px,1.8vmin,28px) 0 0}
+  .walden-map img{display:block;width:100%;height:auto;background:var(--paper);border-radius:8px}
+  .walden-map .about-copy{margin:clamp(8px,1.2vmin,16px) 0 0}
+  .walden-map .about-list{margin-top:clamp(10px,1.6vmin,24px)}
   .howto-item{margin:0 0 clamp(8px,1.2vmin,18px)}
   .howto-item h4{font-family:var(--sans);font-weight:700;font-size:clamp(18px,1.85vmin,44px);margin:0 0 .2em}
   .safety-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px)}
   .safety-item{padding:0 0 clamp(7px,1.1vmin,12px);border-bottom:1.5px dashed rgba(40,15,145,.22)}
   .safety-item b{display:block;font-family:var(--sans);font-size:clamp(18px,1.85vmin,44px)}
-  .safety-item span{display:block;font-family:var(--sans);color:var(--pencil);
+  .safety-item span{display:block;font-family:var(--sans);color:var(--ink);
                     font-size:clamp(16px,1.7vmin,36px);line-height:1.35;margin-top:.15em}
 
   /* Legend panel = her story section, rebuilt in HTML */
@@ -323,22 +337,40 @@
   .setup-alert{padding:12px 14px;margin:0 0 18px;border:2px solid #8b1515;border-radius:8px;color:#641010;background:#fff4f4}
   .setup-alert[hidden],#setupConfirm[hidden]{display:none}
 
-  /* the welcome screen stays a centered 16:9 stage everywhere; only the modal
-     content reflows to one column on narrow phones */
+  /* Landscape TVs retain the measured artwork; narrow phones get a scrolling grid. */
   @media (max-width:900px){
     .guide{grid-template-columns:1fr}
-    .service-grid,.about-grid,.safety-grid{grid-template-columns:1fr}
+    .service-grid,.about-grid,.safety-grid,.about-list.two-col{grid-template-columns:1fr}
     .modal-card{width:94vw}
     .legend-house{width:84px}
     .places2-head,.map-row{flex-direction:column;align-items:flex-start}
   }
   @media (max-width:760px){
-    .awn-l,.awn-r{top:5%;width:11%;height:8%}
-    .t-in,.t-out{top:20.5%}
     .setup-grid{grid-template-columns:1fr}
     .setup-field.wide{grid-column:auto}
   }
-  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+  @media (max-width:900px){
+    html,body{height:auto;min-height:100%}
+    body{overflow:auto}
+    .screen{position:relative;display:block;overflow:visible}
+    .stage{width:100%;aspect-ratio:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px;padding:20px 24px 32px}
+    .stage>.art:not(.crest){display:none}
+    .crest{position:static;order:-4;grid-column:1/-1;width:124px;justify-self:center}
+    .t-greet{position:static;order:-5;grid-column:1/-1;width:100%;max-width:420px;height:90px;justify-self:center}
+    .t-in,.t-out{position:static;order:-3;width:100%;height:60px;font-size:16px}
+    .t-msg{position:static;order:-2;grid-column:1/-1;width:100%;height:auto;min-height:80px;font-size:14px;line-height:1.3}
+    .tile{position:relative;left:auto!important;top:auto;width:100%;gap:10px;padding:8px}
+    .tile .ic{width:100%;max-width:116px}
+    .tile .lb{font-size:17px;line-height:1.2}
+    .cloud{position:static;order:1;width:100%;max-width:180px;height:148px;padding:18px;justify-self:center}
+    .cloud-qr{grid-column:1/-1;width:180px;justify-self:center}
+    .cloud-cap,.cloud-times,.cloud-qrlbl{font-size:12px}
+    .cloud-qr-box{width:72px}
+    #modalBody{padding:32px 24px}
+    .modal-close{display:block;position:absolute;right:14px;top:12px;z-index:4;background:var(--paper);border:2px solid var(--ink);border-radius:50%;width:40px;height:40px;font-size:24px}
+    body:has(.modal.open){overflow:hidden}
+  }
+  @media (prefers-reduced-motion:reduce){ *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important} }
 </style>
 </head>
 <body>
@@ -387,7 +419,7 @@
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal-card">
-    <button class="modal-close" id="modalClose" type="button" tabindex="-1" hidden aria-label="Close">&times;</button>
+    <button class="modal-close" id="modalClose" type="button" aria-label="Close">&times;</button>
     <div id="modalBody"></div>
     <div class="modal-fade top" aria-hidden="true"></div>
     <div class="modal-fade bottom" aria-hidden="true"></div>
@@ -458,6 +490,7 @@
   var configSeq=0;
   var configRetryT=null;
   var DEVICE_CONFIG_KEY='ssh-device-config-v1';
+  var SHARED_CONFIG_KEY='ssh-shared-config-v1:'+new URL('.',location.href).pathname;
   var setupMode=new URLSearchParams(location.search).has('setup');
   var idleFocus=null;
   (function consumeSetStay(){
@@ -495,9 +528,23 @@
     story:{title:'The Legend of Shoreline Social House',house:'assets/art/house.png',blocks:[]},
     location:{label:'Lake Conroe, TX',lat:30.41,lon:-95.59},
     wifi:{ssid:'',password:'',encryption:'WPA'},
-    streaming:[],
-    houseRules:{checkInTime:'4:00 PM',checkoutTime:'11:00 AM',checkoutSteps:[],rules:[],parking:'',trashDay:''},
-    howTo:[],localGuide:{mapUrl:'',intro:'',picks:[]},placesToEat:[],lakeConroe:[],localFavorites:[],
+    streaming:[
+      {label:'Netflix',package:'com.netflix.ninja'},
+      {label:'YouTube',package:'com.google.android.youtube.tv'},
+      {label:'Disney+',package:'com.disney.disneyplus'},
+      {label:'Prime Video',package:'com.amazon.amazonvideo.livingroom'},
+      {label:'Max',package:'com.wbd.stream'},
+      {label:'Hulu',package:'com.hulu.livingroomplus'},
+      {label:'Peacock',package:'com.peacocktv.peacockandroid'},
+      {label:'Spotify',package:'com.spotify.tv.android'},
+      {label:'Apple TV',package:'com.apple.atve.androidtv.appletv'},
+      {label:'Tubi (free)',package:'com.tubitv'},
+      {label:'Pluto (free)',package:'tv.pluto.android'}
+    ],
+    houseRules:{checkInTime:'4:00 PM',checkoutTime:'11:00 AM',checkoutSteps:[],rules:[],parking:'',trashDay:'',contactNote:''},
+    howTo:[],pets:{intro:'',rules:[]},
+    localGuide:{mapUrl:'',intro:'',picks:[],walden:{intro:'',cardNote:'',boatNote:'',amenitiesUrl:'',amenities:[],mapCaption:'',mapKey:[]}},
+    placesToEat:[],lakeConroe:[],localFavorites:[],
     safety:{address:'',emergencyNumber:'911',hospital:'',hostName:'',hostPhone:'',extinguisher:'',breaker:'',shutoff:''}
   };
 
@@ -532,6 +579,12 @@
     });
     setInterval(function(){if(cfg&&!refreshExpiredGuest())loadWeather(cfg.location);},60*60*1000);
     wireModal();
+    window.addEventListener('online',loadConfiguration);
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(function(){
+        setSystemStatus('offline','Offline startup is not available in this browser. Keep the internet connected.');
+      });
+    }
     if(setupMode)initSetup();
     else{
       /* Reached by the remote's Back key walking into an older WebView entry (a ?panel=
@@ -621,16 +674,19 @@
     var issues=[];
     if(!isObj(raw)){issues.push('Configuration must be an object');raw={};}
     var d=SAFE_CONFIG;
-    ['guest','property','story','location','wifi','houseRules','localGuide','safety'].forEach(function(key){
+    ['guest','property','story','location','wifi','houseRules','pets','localGuide','safety'].forEach(function(key){
       if(raw[key]!=null&&!isObj(raw[key]))issues.push(key+' must be an object');
     });
+    if(isObj(raw.localGuide)&&raw.localGuide.walden!=null&&!isObj(raw.localGuide.walden))issues.push('localGuide.walden must be an object');
     var g=isObj(raw.guest)?raw.guest:{};
     var p=isObj(raw.property)?raw.property:{};
     var s=isObj(raw.story)?raw.story:{};
     var loc=isObj(raw.location)?raw.location:{};
     var wifi=isObj(raw.wifi)?raw.wifi:{};
     var hr=isObj(raw.houseRules)?raw.houseRules:{};
+    var pets=isObj(raw.pets)?raw.pets:{};
     var lg=isObj(raw.localGuide)?raw.localGuide:{};
+    var walden=isObj(lg.walden)?lg.walden:{};
     var safety=isObj(raw.safety)?raw.safety:{};
     var checkInRaw=cleanString(g.checkIn,'');
     var checkOutRaw=cleanString(g.checkOut,'');
@@ -688,6 +744,8 @@
 
     var mapUrl=cleanUrl(lg.mapUrl,'');
     if(lg.mapUrl&&!mapUrl)issues.push('localGuide.mapUrl must be an http(s) URL');
+    var amenitiesUrl=cleanUrl(walden.amenitiesUrl,'');
+    if(walden.amenitiesUrl&&!amenitiesUrl)issues.push('localGuide.walden.amenitiesUrl must be an http(s) URL');
     var lat=cleanNumber(loc.lat,null,-90,90),lon=cleanNumber(loc.lon,null,-180,180);
     if(loc.lat!=null&&lat==null)issues.push('location.lat must be a valid latitude');
     if(loc.lon!=null&&lon==null)issues.push('location.lon must be a valid longitude');
@@ -715,10 +773,18 @@
       houseRules:{
         checkInTime:cleanString(hr.checkInTime,d.houseRules.checkInTime),checkoutTime:cleanString(hr.checkoutTime,d.houseRules.checkoutTime),
         checkoutSteps:stringArray(hr.checkoutSteps,issues,'houseRules.checkoutSteps'),rules:stringArray(hr.rules,issues,'houseRules.rules'),
-        parking:cleanString(hr.parking,''),trashDay:cleanString(hr.trashDay,'')
+        parking:cleanString(hr.parking,''),trashDay:cleanString(hr.trashDay,''),contactNote:cleanString(hr.contactNote,'')
       },
       howTo:howTo,
-      localGuide:{mapUrl:mapUrl,intro:cleanString(lg.intro,''),picks:guideArray(lg.picks,issues,'localGuide.picks')},
+      pets:{intro:cleanString(pets.intro,''),rules:stringArray(pets.rules,issues,'pets.rules')},
+      localGuide:{
+        mapUrl:mapUrl,intro:cleanString(lg.intro,''),picks:guideArray(lg.picks,issues,'localGuide.picks'),
+        walden:{
+          intro:cleanString(walden.intro,''),cardNote:cleanString(walden.cardNote,''),boatNote:cleanString(walden.boatNote,''),
+          amenitiesUrl:amenitiesUrl,amenities:stringArray(walden.amenities,issues,'localGuide.walden.amenities'),
+          mapCaption:cleanString(walden.mapCaption,''),mapKey:stringArray(walden.mapKey,issues,'localGuide.walden.mapKey')
+        }
+      },
       placesToEat:guideArray(raw.placesToEat,issues,'placesToEat'),
       lakeConroe:guideArray(raw.lakeConroe,issues,'lakeConroe'),
       localFavorites:guideArray(raw.localFavorites,issues,'localFavorites'),
@@ -813,13 +879,31 @@
     return true;
   }
 
+  function sharedConfig(raw){
+    if(!isObj(raw))return null;
+    var safe=clone(raw);
+    safe.guest=clone(SAFE_CONFIG.guest);
+    safe.wifi=clone(SAFE_CONFIG.wifi);
+    safe.safety=isObj(safe.safety)?safe.safety:{};
+    ['address','hostName','hostPhone'].forEach(function(key){safe.safety[key]='';});
+    return safe;
+  }
+  function readSharedConfig(){
+    try{return sharedConfig(JSON.parse(localStorage.getItem(SHARED_CONFIG_KEY)||'null'));}
+    catch(e){return null;}
+  }
   function loadConfiguration(){
     var seq=++configSeq;
     clearTimeout(configRetryT);
     var baseFailed=false,deviceError='';
-    fetchJsonRetry('config.json',2).catch(function(){
+    fetchJsonRetry('config.json',2).then(function(base){
+      if(!isObj(base))throw new Error('invalid shared config');
+      var safe=sharedConfig(base);
+      try{localStorage.setItem(SHARED_CONFIG_KEY,JSON.stringify(safe));}catch(e){}
+      return safe;
+    }).catch(function(){
       baseFailed=true;
-      return clone(SAFE_CONFIG);
+      return readSharedConfig()||clone(SAFE_CONFIG);
     }).then(function(base){
       if(!isObj(base)){baseFailed=true;base=clone(SAFE_CONFIG);}
       var device=readDeviceConfig();
@@ -837,7 +921,7 @@
       if(seq!==configSeq)return;
       var result=normalizeConfig(raw);
       applyConfig(result.config,result.issues,result.guestNotice);
-      setSystemStatus('config',baseFailed?'Property details could not be refreshed. Showing safe fallback content; retrying automatically.':'');
+      setSystemStatus('config',baseFailed?'Property details could not be refreshed. Using saved details where available; retrying automatically.':'');
       setSystemStatus('local',deviceError);
       if(baseFailed)configRetryT=setTimeout(loadConfiguration,30000);
     });
@@ -952,7 +1036,9 @@
     leaveSetup();
   }
 
-  init(clone(SAFE_CONFIG));
+  var savedBase=readSharedConfig()||clone(SAFE_CONFIG);
+  var savedDevice=readDeviceConfig().config;
+  init(normalizeConfig(savedDevice?mergeConfig(savedBase,savedDevice):savedBase).config);
   loadConfiguration();
 
   function esc(s){
@@ -1134,16 +1220,20 @@
   function readWeatherCache(key){
     try{
       var saved=JSON.parse(localStorage.getItem(WX_CACHE_KEY)||'null');
-      if(saved&&saved.key===key&&typeof saved.temp==='number'&&typeof saved.cond==='string'&&
-         typeof saved.at==='number'&&Date.now()-saved.at<=WX_CACHE_MAX_AGE)return saved;
+       if(freshWeather(saved,key))return saved;
     }catch(e){}
     return null;
   }
   function writeWeatherCache(value){
     try{localStorage.setItem(WX_CACHE_KEY,JSON.stringify(value));}catch(e){}
   }
+  function freshWeather(value,key){
+    var age=value&&Date.now()-value.at;
+    return !!(value&&value.key===key&&typeof value.temp==='number'&&Number.isFinite(value.temp)&&
+      typeof value.cond==='string'&&typeof value.at==='number'&&age>=0&&age<=WX_CACHE_MAX_AGE);
+  }
   function showWeatherFallback(key){
-    var cached=lastWeather&&lastWeather.key===key?lastWeather:readWeatherCache(key);
+    var cached=freshWeather(lastWeather,key)?lastWeather:readWeatherCache(key);
     if(cached){lastWeather=cached;setWx(Math.round(cached.temp)+'°','Cached · '+cached.cond,cached.code);}
     else setWx('--°','Weather unavailable',null);
   }
@@ -1155,7 +1245,7 @@
       setWx('--°','Weather unavailable',null);return;
     }
     var key=weatherLocationKey(loc);
-    var cached=lastWeather&&lastWeather.key===key?lastWeather:readWeatherCache(key);
+    var cached=freshWeather(lastWeather,key)?lastWeather:readWeatherCache(key);
     if(cached){lastWeather=cached;setWx(Math.round(cached.temp)+'°','Cached · '+cached.cond,cached.code);}
     var url='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(loc.lat)+'&longitude='+encodeURIComponent(loc.lon)+
       '&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto';
@@ -1201,11 +1291,12 @@
     var hr=(c&&c.houseRules)||{};
     var howTo=Array.isArray(c&&c.howTo)?c.howTo:[];
     var safety=(c&&c.safety)||{};
+    var pets=(c&&c.pets)||{};
+    var petRules=Array.isArray(pets.rules)?pets.rules.filter(Boolean):[];
     var rules=Array.isArray(hr.rules)?hr.rules.filter(Boolean):[];
     var steps=Array.isArray(hr.checkoutSteps)?hr.checkoutSteps.filter(Boolean):[];
     var h='<section class="about">';
     h+='<h2 class="about-title">About the Place</h2>';
-    h+='<p class="lede">House rules, how-tos, and safety notes for your stay.</p>';
     h+='<div class="about-grid">';
     h+='<div class="about-section"><h3>House Rules</h3>';
     if(rules.length)h+=htmlList(rules);
@@ -1231,6 +1322,12 @@
       });
       h+='</div></div>';
     }
+    if(pets.intro||petRules.length){
+      h+='<div class="about-section full"><h3>Four-Legged Guests</h3>';
+      if(pets.intro)h+='<p class="about-copy">'+esc(pets.intro)+'</p>';
+      if(petRules.length)h+=htmlList(petRules);
+      h+='</div>';
+    }
     var safetyRows=[];
     if(safety.emergencyNumber)safetyRows.push({label:'Emergency',value:safety.emergencyNumber});
     if(safety.hospital)safetyRows.push({label:'Hospital',value:safety.hospital});
@@ -1239,13 +1336,15 @@
     if(safety.hostPhone)safetyRows.push({label:'Host phone',value:safety.hostPhone});
     if(safety.extinguisher)safetyRows.push({label:'Fire extinguisher',value:safety.extinguisher});
     if(safety.breaker)safetyRows.push({label:'Breaker box',value:safety.breaker});
-    if(safety.shutoff)safetyRows.push({label:'Water and gas shutoff',value:safety.shutoff});
+    if(safety.shutoff)safetyRows.push({label:'Water shutoff',value:safety.shutoff});
     if(safetyRows.length){
       h+='<div class="about-section full safety"><h3>Safety</h3><div class="safety-grid">';
       safetyRows.forEach(function(row){
         h+='<div class="safety-item"><b>'+esc(row.label)+'</b><span>'+esc(row.value)+'</span></div>';
       });
-      h+='</div></div>';
+      h+='</div>';
+      if(hr.contactNote)h+='<p class="about-note">'+esc(hr.contactNote)+'</p>';
+      h+='</div>';
     }
     return h+'</section>';
   }
@@ -1290,12 +1389,47 @@
   }
 
   function buildLocalPage(c){
-    var h='<h2>Local Favorites</h2>'+
-      '<p class="lede">A few of our favorite places nearby. Drive times from the house.</p>'+
+    var lg=(c&&isObj(c.localGuide))?c.localGuide:{};
+    var walden=isObj(lg.walden)?lg.walden:{};
+    var amenities=Array.isArray(walden.amenities)?walden.amenities.filter(Boolean):[];
+    var mapKey=Array.isArray(walden.mapKey)?walden.mapKey.filter(Boolean):[];
+    var mapCaption=walden.mapCaption||'';
+    var h='<h2>Local Favorites</h2>';
+    if(walden.intro||amenities.length||mapCaption||mapKey.length){
+      h+='<div class="about-section walden"><h3>Around Walden</h3>';
+      if(walden.intro)h+='<p class="about-copy">'+esc(walden.intro)+'</p>';
+      if(walden.cardNote)h+='<p class="about-copy">'+esc(walden.cardNote)+'</p>';
+      if(walden.boatNote)h+='<p class="about-copy">'+esc(walden.boatNote)+'</p>';
+      if(amenities.length){
+        h+='<ul class="about-list two-col">';
+        amenities.forEach(function(item){h+='<li>'+esc(item)+'</li>';});
+        h+='</ul>';
+      }
+      if(mapCaption||mapKey.length){
+        h+='<figure class="walden-map">';
+        h+='<img src="assets/art/walden-map.png" alt="Walden on Lake Conroe map. Number 1 is Shoreline Social House.">';
+        if(mapCaption)h+='<p class="about-copy">'+esc(mapCaption)+'</p>';
+        if(mapKey.length){
+          h+='<ul class="about-list two-col walden-key">';
+          mapKey.forEach(function(item,i){h+='<li>'+esc((i+1)+' '+item)+'</li>';});
+          h+='</ul>';
+        }
+        h+='</figure>';
+      }
+      h+='</div>';
+    }
+    h+='<p class="lede">Our favorite places nearby, with drive times from the house.</p>'+
       guideList(c&&c.localFavorites);
-    var map=(c.localGuide&&c.localGuide.mapUrl)||'';
-    if(map)h+='<div class="map-row"><div class="qr local-qr" id="localQR"></div>'+
-      '<p class="lede">Scan to open a map of restaurants and things to do around the lake on your phone.</p></div>';
+    var map=lg.mapUrl||'';
+    var amenitiesUrl=walden.amenitiesUrl||'';
+    if(map||amenitiesUrl){
+      h+='<div class="map-row">';
+      if(amenitiesUrl)h+='<div><div class="qr local-qr" id="waldenQR"></div>'+
+        '<p class="lede">Scan for Walden amenity hours and details.</p></div>';
+      if(map)h+='<div><div class="qr local-qr" id="localQR"></div>'+
+        '<p class="lede">Scan to open a map of restaurants and things to do around the lake on your phone.</p></div>';
+      h+='</div>';
+    }
     return h;
   }
 
@@ -1348,6 +1482,8 @@
     if(panel.key==='local'){
       var url=(cfg.localGuide&&cfg.localGuide.mapUrl)||'';
       if(url)makeQR('localQR',url,'Area map QR code','Map QR code unavailable right now.');
+      var walden=(cfg.localGuide&&cfg.localGuide.walden)||{};
+      if(walden.amenitiesUrl)makeQR('waldenQR',walden.amenitiesUrl,'Walden amenities QR code','Amenities QR code unavailable right now.');
     }
     var focusEl=null;
     if(panel.key==='streaming'){
@@ -1366,7 +1502,9 @@
   }
 
   function focusPanel(el){
-    if(el&&el.focus)el.focus();
+    var target=el||modalBody;
+    if(target===modalBody)target.setAttribute('tabindex','-1');
+    target.focus({preventScroll:true});
   }
 
   function refreshOpenModal(){
@@ -1405,10 +1543,10 @@
     modal.setAttribute('aria-hidden','false');
     modal.setAttribute('aria-labelledby','modalTitle');
     document.getElementById('modalClose').setAttribute('aria-label','Close '+(panel.label||'panel'));
-    var scr=document.querySelector('.screen');
-    if(scr){scr.inert=true;scr.setAttribute('aria-hidden','true');}
     var focusEl=initializePanel(panel);
     focusPanel(focusEl);
+    var scr=document.querySelector('.screen');
+    if(scr){scr.inert=true;scr.setAttribute('aria-hidden','true');}
     updateScrollCues();
   }
 
@@ -1426,15 +1564,15 @@
   function closeModal(){
     if(!modal.classList.contains('open'))return false;
     var t=lastTrigger||stage.querySelector('.tile');
+    var scr=document.querySelector('.screen');
+    if(scr){scr.inert=false;scr.removeAttribute('aria-hidden');}
+    if(t&&document.contains(t)&&t.focus)t.focus();
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden','true');
     modal.removeAttribute('aria-labelledby');
     document.getElementById('modalClose').setAttribute('aria-label','Close');
-    var scr=document.querySelector('.screen');
-    if(scr){scr.inert=false;scr.removeAttribute('aria-hidden');}
     modalBody.innerHTML='';
     setSystemStatus('panel','');
-    if(t&&document.contains(t)&&t.focus)t.focus();
     lastTrigger=null;
     currentPanel=null;
     return true;
@@ -1533,8 +1671,8 @@
     clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('show');},3200);
   }
 
-  /* Hide the D-pad ring after idle so the welcome screen looks unselected again.
-     Next arrow press then lands on Streaming, same as a cold start. */
+  /* Hide only the home tile's ring after idle. Preserve selection for the next OK,
+     and keep a panel's selection visible while the guest reads or chooses an app. */
   function createIdleFocus(doc, delayMs){
     var timer=null;
     function inSetup(){
@@ -1543,11 +1681,13 @@
     }
     function goIdle(){
       if(inSetup())return;
-      var el=doc.activeElement;
-      if(el&&typeof el.blur==='function'&&el!==doc.body&&el!==doc.documentElement)el.blur();
+      var panel=doc.getElementById('modal');
+      if(panel&&panel.classList.contains('open'))return;
+      doc.body.classList.add('focus-idle');
     }
     function note(){
       if(inSetup())return;
+      doc.body.classList.remove('focus-idle');
       clearTimeout(timer);
       timer=setTimeout(goIdle,delayMs);
     }
@@ -1599,12 +1739,12 @@
   function scrollModal(sign){
     if(!modalBody)return;
     var step=sign*Math.round(modalBody.clientHeight*0.5);
-    try{modalBody.scrollBy({top:step,behavior:'smooth'});}
+    try{modalBody.scrollBy({top:step,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
     catch(e){modalBody.scrollBy(0,step);}
   }
   function trapModalTab(e){
     var els=focusables(true);
-    if(!els.length){e.preventDefault();return true;}
+    if(!els.length){focusPanel(null);e.preventDefault();return true;}
     var index=els.indexOf(document.activeElement);
     if(index===-1)index=e.shiftKey?0:-1;
     index=(index+(e.shiftKey?-1:1)+els.length)%els.length;
@@ -1672,6 +1812,7 @@
       code===13||code===23||code===66;
   }
   document.addEventListener('keydown',function(e){
+    if(setupMode||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]')))return;
     var open=modal.classList.contains('open');
     if(open&&e.key==='Tab'){
       trapModalTab(e);
