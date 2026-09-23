@@ -243,8 +243,12 @@
   .about-list.two-col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px)}
   .about-section.walden{margin-bottom:clamp(16px,2.2vmin,32px)}
   .about-section.walden .about-list{margin-top:clamp(10px,1.6vmin,24px)}
-  .walden-map{margin:clamp(12px,1.8vmin,28px) 0 0}
-  .walden-map img{display:block;width:100%;height:auto;background:var(--paper);border-radius:8px}
+  .walden-map,.house-aerial{margin:clamp(12px,1.8vmin,28px) 0 0}
+  .walden-map img,.house-aerial img{display:block;width:100%;height:auto;background:var(--paper);border-radius:8px}
+  .house-aerial figcaption{
+    font-family:var(--sans);color:var(--ink);font-size:clamp(16px,1.7vmin,36px);
+    line-height:1.35;margin:clamp(8px,1.2vmin,16px) 0 0;
+  }
   .howto-item{margin:0 0 clamp(8px,1.2vmin,18px)}
   .howto-item h4{font-family:var(--sans);font-weight:700;font-size:clamp(18px,1.85vmin,44px);margin:0 0 .2em}
   .safety-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px)}
@@ -465,11 +469,9 @@
         </div>
       </fieldset>
       <fieldset>
-        <legend>Guest contact information</legend>
+        <legend>Address</legend>
         <div class="setup-grid">
           <div class="setup-field wide"><label for="setupAddress">Street address</label><input id="setupAddress" name="address" autocomplete="street-address" maxlength="240"></div>
-          <div class="setup-field"><label for="setupHostName">Host name</label><input id="setupHostName" name="hostName" autocomplete="name" maxlength="100"></div>
-          <div class="setup-field"><label for="setupHostPhone">Host phone</label><input id="setupHostPhone" name="hostPhone" type="tel" autocomplete="tel" maxlength="80"></div>
         </div>
       </fieldset>
       <div class="setup-actions">
@@ -478,7 +480,7 @@
         <button class="danger" id="setupClear" type="button">Clear device data</button>
       </div>
       <div class="setup-actions" id="setupConfirm" hidden>
-        <span class="setup-note">Remove every locally stored guest, Wi-Fi, address, and host value for this origin?</span>
+        <span class="setup-note">Remove every locally stored guest, Wi-Fi, and address value for this origin?</span>
         <button class="danger" id="setupClearConfirm" type="button">Yes, clear device data</button>
         <button class="secondary" id="setupClearCancel" type="button">Keep device data</button>
       </div>
@@ -646,23 +648,22 @@
       }
     ],
     "houseRules": {
-      "checkInTime": "4:00 PM",
-      "checkoutTime": "11:00 AM",
+      "checkInTime": "3:00 PM",
+      "checkoutTime": "10:00 AM",
       "checkoutSteps": [
         "Put all trash in the outdoor bin by the front door",
-        "Start the dishwasher before you leave",
         "Turn off all lights",
-        "Lock all doors and windows",
-        "Leave the house keys and the Walden key card where you found them"
+        "Start the dishwasher before you leave",
+        "Leave the Walden key card where you found it"
       ],
       "rules": [
         "Quiet hours 10 PM to 8 AM",
-        "No smoking indoors",
+        "No smoking",
         "No parties or events",
         "Only registered guests",
         "Pets only with prior approval"
       ],
-      "parking": "Park in the driveway. Please don't block the street or your neighbors.",
+      "parking": "Park in the far right two driveway spots only. Overflow is first come, first served on Lakewood Dr. at the corner of Trail Hollow Dr.",
       "contactNote": "Something spill or break? Message us through your booking app. We would rather know than find it later."
     },
     "howTo": [
@@ -708,16 +709,17 @@
       {
         "title": "Grill & Outdoor Gear",
         "steps": [
+          "Lake and outdoor gear is in the tall cabinet near the kitchen",
           "Turn off the propane at the bottle",
           "Clean the grill after use",
           "Let it cool completely before covering",
-          "Return outdoor storage items before checkout",
+          "Return items taken from indoors",
           "If you use inflatables, deflate them and let them dry before storing"
         ]
       }
     ],
     "pets": {
-      "intro": "In The Pawlor next to the bar you will find a bed, food and water bowls, a few treats, a leash, and waste bags.",
+      "intro": "In The Pawlor next to the bar you will find a bed, food and water bowls. The leash and waste bags are in the right drawer of the tall cabinet by the kitchen.",
       "rules": [
         "Clean up after your pup on the property and in the neighborhood",
         "Wipe muddy paws before coming back inside",
@@ -783,7 +785,7 @@
       ],
       "walden": {
         "intro": "You can use many of Walden's private amenities with the guest key card in the townhouse.",
-        "cardNote": "A $25 replacement fee applies to lost or unreturned cards.",
+        "cardNote": "A $50 replacement fee applies to lost or unreturned cards.",
         "boatNote": "If you registered a boat or personal watercraft before arrival, Walden boat tags will be waiting at check-in. Trailers left overnight at either Walden boat ramp need that tag, or they can be towed.",
         "amenitiesUrl": "https://www.waldenonlakeconroe.com/web/pages/amenities",
         "amenities": [
@@ -811,7 +813,8 @@
           "South Boat Ramp",
           "Fitness / Racquet Center / Fitness Pool"
         ]
-      }
+      },
+      "houseAerialCaption": "Here are your driveway spots, overflow parking on Lakewood Dr., and where to dock a boat."
     },
     "placesToEat": [
       {
@@ -909,6 +912,10 @@
         "note": "Licensed guide since 1997: trophy striper, catfish, and crappie, gear included",
         "drive": "meet at marina"
       }
+    ],
+    "lakeNotes": [
+      "Striped towels are in the green tub downstairs. Do not use bath towels for the lake or pool.",
+      "You can swim at your own risk by the green space on Lakewood Dr."
     ],
     "localFavorites": [
       {
@@ -1206,6 +1213,7 @@
       pets:{intro:cleanString(pets.intro,''),rules:stringArray(pets.rules,issues,'pets.rules')},
       localGuide:{
         mapUrl:mapUrl,intro:cleanString(lg.intro,''),picks:guideArray(lg.picks,issues,'localGuide.picks'),
+        houseAerialCaption:cleanString(lg.houseAerialCaption,''),
         walden:{
           intro:cleanString(walden.intro,''),cardNote:cleanString(walden.cardNote,''),boatNote:cleanString(walden.boatNote,''),
           amenitiesUrl:amenitiesUrl,amenities:stringArray(walden.amenities,issues,'localGuide.walden.amenities'),
@@ -1214,6 +1222,7 @@
       },
       placesToEat:guideArray(raw.placesToEat,issues,'placesToEat'),
       lakeConroe:guideArray(raw.lakeConroe,issues,'lakeConroe'),
+      lakeNotes:stringArray(raw.lakeNotes,issues,'lakeNotes'),
       localFavorites:guideArray(raw.localFavorites,issues,'localFavorites'),
       safety:{
         address:cleanString(safety.address,''),emergencyNumber:cleanString(safety.emergencyNumber,'911'),
@@ -1408,8 +1417,6 @@
     setupValue('setupWifiPassword',wifi.password);
     setupValue('setupEncryption',canonicalWifiEncryption(wifi.encryption||'WPA',typeof wifi.password==='string'?wifi.password:'',[]));
     setupValue('setupAddress',safety.address);
-    setupValue('setupHostName',safety.hostName);
-    setupValue('setupHostPhone',safety.hostPhone);
     syncSetupPassword();
     if(stored.error)showSetupAlert(stored.error,false);
     document.getElementById('setupEncryption').addEventListener('change',syncSetupPassword);
@@ -1464,8 +1471,8 @@
       wifi:{ssid:ssid,password:password,encryption:encryption},
       safety:{
         address:document.getElementById('setupAddress').value.trim(),
-        hostName:document.getElementById('setupHostName').value.trim(),
-        hostPhone:document.getElementById('setupHostPhone').value.trim()
+        hostName:'',
+        hostPhone:''
       }
     };
     var error=writeDeviceConfig(value);
@@ -1560,7 +1567,7 @@
   }
   setInterval(updateClock,15000);
 
-  /* "4:00 PM" -> "4PM" for the compact check-in/out cloud (her design uses the short form) */
+  /* "3:00 PM" -> "3PM" for the compact check-in/out cloud (her design uses the short form) */
   function shortTime(t){
     return String(t==null?'':t).replace(/:00\b/,'').replace(/\s+/g,'').toUpperCase();
   }
@@ -1771,8 +1778,6 @@
     if(safety.emergencyNumber)safetyRows.push({label:'Emergency',value:safety.emergencyNumber});
     if(safety.hospital)safetyRows.push({label:'Hospital',value:safety.hospital});
     if(safety.address)safetyRows.push({label:'Address',value:safety.address});
-    if(safety.hostName)safetyRows.push({label:'Host',value:safety.hostName});
-    if(safety.hostPhone)safetyRows.push({label:'Host phone',value:safety.hostPhone});
     if(safety.extinguisher)safetyRows.push({label:'Fire extinguisher',value:safety.extinguisher});
     if(safety.breaker)safetyRows.push({label:'Breaker box',value:safety.breaker});
     if(safety.shutoff)safetyRows.push({label:'Water shutoff',value:safety.shutoff});
@@ -1822,9 +1827,13 @@
   }
 
   function buildLakePage(c){
-    return '<h2>Lake Conroe</h2>'+
-      '<p class="lede">Get out on the water. Rentals, beaches, and lakeside spots, closest first.</p>'+
-      guideList(c&&c.lakeConroe);
+    var notes=Array.isArray(c&&c.lakeNotes)?c.lakeNotes.filter(Boolean):[];
+    var h='<h2>Lake Conroe</h2>'+
+      '<p class="lede">Get out on the water. Rentals, beaches, and lakeside spots, closest first.</p>';
+    notes.forEach(function(note){
+      h+='<p class="about-copy">'+esc(note)+'</p>';
+    });
+    return h+guideList(c&&c.lakeConroe);
   }
 
   function buildLocalPage(c){
@@ -1833,6 +1842,10 @@
     var amenities=Array.isArray(walden.amenities)?walden.amenities.filter(Boolean):[];
     var mapKey=Array.isArray(walden.mapKey)?walden.mapKey.filter(Boolean):[];
     var mapCaption=walden.mapCaption||'';
+    var aerialCaption=lg.houseAerialCaption||'Here are your driveway spots, overflow parking on Lakewood Dr., and where to dock a boat.';
+    var houseAerial='<figure class="house-aerial">'+
+      '<img src="assets/art/house-aerial.png" alt="Aerial of Shoreline Social House showing the driveway, overflow parking, and the boat dock.">'+
+      '<figcaption>'+esc(aerialCaption)+'</figcaption></figure>';
     var h='<h2>Local Favorites</h2>';
     if(walden.intro||amenities.length||mapCaption||mapKey.length){
       h+='<div class="about-section walden"><h3>Around Walden</h3>';
@@ -1844,10 +1857,13 @@
         amenities.forEach(function(item){h+='<li>'+esc(item)+'</li>';});
         h+='</ul>';
       }
+      h+=houseAerial;
       h+='<figure class="walden-map">';
       h+='<img src="assets/art/walden-map.png" alt="Walden on Lake Conroe map. Number 1 is Shoreline Social House.">';
       h+='</figure>';
       h+='</div>';
+    }else{
+      h+=houseAerial;
     }
     h+='<p class="lede">Our favorite places nearby, with drive times from the house.</p>'+
       guideList(c&&c.localFavorites);

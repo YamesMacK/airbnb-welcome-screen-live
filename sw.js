@@ -3,7 +3,7 @@
 // Only public, static site files enter this cache. Device details stay in the
 // page's local storage; config.json uses the page's sanitized last-good copy.
 // Bump RELEASE when changing this list. Successful network responses always win.
-const RELEASE = '2026-09-19-1';
+const RELEASE = '2026-09-22-1';
 const PREFIX = 'ssh-shell:' + self.registration.scope + ':';
 const CACHE = PREFIX + RELEASE;
 const FILES = [
@@ -16,7 +16,7 @@ const FILES = [
   'assets/art/ribbon.png', 'assets/art/table.png', 'assets/art/tile-about.png',
   'assets/art/tile-food.png', 'assets/art/tile-lake.png', 'assets/art/tile-legend.png',
   'assets/art/tile-local-favorites.png', 'assets/art/tile-streaming.png',
-  'assets/art/tile-wifi.png', 'assets/art/walden-map.png', 'assets/art/weather-doodle.png'
+  'assets/art/house-aerial.png', 'assets/art/tile-wifi.png', 'assets/art/walden-map.png', 'assets/art/weather-doodle.png'
 ];
 const URLS = new Set(FILES.map(file => new URL(file, self.registration.scope).href));
 self.addEventListener('install', event => {

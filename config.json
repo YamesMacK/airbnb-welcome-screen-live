@@ -59,23 +59,22 @@
   ],
 
   "houseRules": {
-    "checkInTime": "4:00 PM",
-    "checkoutTime": "11:00 AM",
+    "checkInTime": "3:00 PM",
+    "checkoutTime": "10:00 AM",
     "checkoutSteps": [
       "Put all trash in the outdoor bin by the front door",
-      "Start the dishwasher before you leave",
       "Turn off all lights",
-      "Lock all doors and windows",
-      "Leave the house keys and the Walden key card where you found them"
+      "Start the dishwasher before you leave",
+      "Leave the Walden key card where you found it"
     ],
     "rules": [
       "Quiet hours 10 PM to 8 AM",
-      "No smoking indoors",
+      "No smoking",
       "No parties or events",
       "Only registered guests",
       "Pets only with prior approval"
     ],
-    "parking": "Park in the driveway. Please don't block the street or your neighbors.",
+    "parking": "Park in the far right two driveway spots only. Overflow is first come, first served on Lakewood Dr. at the corner of Trail Hollow Dr.",
     "contactNote": "Something spill or break? Message us through your booking app. We would rather know than find it later."
   },
 
@@ -85,12 +84,12 @@
     { "title": "Washer & Dryer", "steps": ["Detergent is in the laundry area", "Normal cycle works for most loads", "Clean the lint trap after drying"] },
     { "title": "Trash & Recycling", "steps": ["Bags are under the kitchen sink", "Put tied trash bags in the outdoor bin by the front door"] },
     { "title": "Kitchen", "steps": ["Use the antique china and the nice cocktail glasses", "Everything is dishwasher safe", "Please keep the china out of the microwave"] },
-    { "title": "Grill & Outdoor Gear", "steps": ["Turn off the propane at the bottle", "Clean the grill after use", "Let it cool completely before covering", "Return outdoor storage items before checkout", "If you use inflatables, deflate them and let them dry before storing"] }
+    { "title": "Grill & Outdoor Gear", "steps": ["Lake and outdoor gear is in the tall cabinet near the kitchen", "Turn off the propane at the bottle", "Clean the grill after use", "Let it cool completely before covering", "Return items taken from indoors", "If you use inflatables, deflate them and let them dry before storing"] }
   ],
 
   "pets": {
     "_comment": "Four-Legged Guests section on About. House rules still require prior approval; these describe an approved dog's stay.",
-    "intro": "In The Pawlor next to the bar you will find a bed, food and water bowls, a few treats, a leash, and waste bags.",
+    "intro": "In The Pawlor next to the bar you will find a bed, food and water bowls. The leash and waste bags are in the right drawer of the tall cabinet by the kitchen.",
     "rules": [
       "Clean up after your pup on the property and in the neighborhood",
       "Wipe muddy paws before coming back inside",
@@ -122,7 +121,7 @@
     "walden": {
       "_comment": "Around Walden block on Local Favorites. Public amenities page URL; key-card return itself lives on the About checkout list.",
       "intro": "You can use many of Walden's private amenities with the guest key card in the townhouse.",
-      "cardNote": "A $25 replacement fee applies to lost or unreturned cards.",
+      "cardNote": "A $50 replacement fee applies to lost or unreturned cards.",
       "boatNote": "If you registered a boat or personal watercraft before arrival, Walden boat tags will be waiting at check-in. Trailers left overnight at either Walden boat ramp need that tag, or they can be towed.",
       "amenitiesUrl": "https://www.waldenonlakeconroe.com/web/pages/amenities",
       "amenities": [
@@ -150,7 +149,8 @@
         "South Boat Ramp",
         "Fitness / Racquet Center / Fitness Pool"
       ]
-    }
+    },
+    "houseAerialCaption": "Here are your driveway spots, overflow parking on Lakewood Dr., and where to dock a boat."
   },
 
   "placesToEat": [
@@ -176,6 +176,11 @@
     { "name": "Bar Lago", "note": "Lakeside cocktail bar at Waterpoint Marina: craft drinks and live music", "drive": "12 min" },
     { "name": "LandShark Bar & Grill", "note": "Waterfront deck and sand beach at Margaritaville Resort", "drive": "12 min" },
     { "name": "The Fish Dude's Guide Service", "note": "Licensed guide since 1997: trophy striper, catfish, and crappie, gear included", "drive": "meet at marina" }
+  ],
+
+  "lakeNotes": [
+    "Striped towels are in the green tub downstairs. Do not use bath towels for the lake or pool.",
+    "You can swim at your own risk by the green space on Lakewood Dr."
   ],
 
   "localFavorites": [
