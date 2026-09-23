@@ -196,8 +196,13 @@
   .guide b{ flex:1 1 auto; min-width:0; font-family:var(--sans); font-weight:700; color:var(--ink); font-size:clamp(18px,1.85vmin,44px); line-height:1.2; }
   .guide .drive{ flex:0 0 auto; white-space:nowrap; font-style:normal; font-family:var(--type); color:var(--green); font-size:clamp(13px,1.3vmin,32px); }
   .guide span{ display:block; font-family:var(--sans); color:var(--ink); font-size:clamp(16px,1.7vmin,36px); line-height:1.35; margin-top:.15em; }
-  .map-row{ display:flex; align-items:center; gap:clamp(14px,2.4vmin,34px); margin-top:clamp(10px,1.6vmin,24px); }
-  .map-row .lede{ margin:0; }
+  .map-row{
+    display:flex; justify-content:space-between; align-items:flex-start; width:100%;
+    margin-top:clamp(10px,1.6vmin,24px);
+  }
+  .map-row .lede{ margin:0; max-width:18em; color:var(--ink); }
+  .map-qr{ display:flex; flex-direction:column; align-items:flex-start; max-width:46%; }
+  .map-qr-end{ align-items:flex-end; margin-left:auto; text-align:right; }
 
   /* WiFi panel = her scan-to-connect section, rebuilt in HTML */
   .wifi{--wifi-art-width:clamp(90px,min(12vw,20vmin),240px);position:relative;text-align:center;
@@ -240,8 +245,6 @@
   .about-section.walden .about-list{margin-top:clamp(10px,1.6vmin,24px)}
   .walden-map{margin:clamp(12px,1.8vmin,28px) 0 0}
   .walden-map img{display:block;width:100%;height:auto;background:var(--paper);border-radius:8px}
-  .walden-map .about-copy{margin:clamp(8px,1.2vmin,16px) 0 0}
-  .walden-map .about-list{margin-top:clamp(10px,1.6vmin,24px)}
   .howto-item{margin:0 0 clamp(8px,1.2vmin,18px)}
   .howto-item h4{font-family:var(--sans);font-weight:700;font-size:clamp(18px,1.85vmin,44px);margin:0 0 .2em}
   .safety-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vmin,18px) clamp(18px,3vmin,40px)}
@@ -352,6 +355,7 @@
     .wifi-deco{display:none}
     .legend-house{width:84px}
     .places2-head,.map-row{flex-direction:column;align-items:flex-start}
+    .map-qr,.map-qr-end{max-width:none;margin-left:0;align-items:flex-start;text-align:left}
   }
   @media (max-width:760px){
     .setup-grid{grid-template-columns:1fr}
@@ -1840,17 +1844,9 @@
         amenities.forEach(function(item){h+='<li>'+esc(item)+'</li>';});
         h+='</ul>';
       }
-      if(mapCaption||mapKey.length){
-        h+='<figure class="walden-map">';
-        h+='<img src="assets/art/walden-map.png" alt="Walden on Lake Conroe map. Number 1 is Shoreline Social House.">';
-        if(mapCaption)h+='<p class="about-copy">'+esc(mapCaption)+'</p>';
-        if(mapKey.length){
-          h+='<ul class="about-list two-col walden-key">';
-          mapKey.forEach(function(item,i){h+='<li>'+esc((i+1)+' '+item)+'</li>';});
-          h+='</ul>';
-        }
-        h+='</figure>';
-      }
+      h+='<figure class="walden-map">';
+      h+='<img src="assets/art/walden-map.png" alt="Walden on Lake Conroe map. Number 1 is Shoreline Social House.">';
+      h+='</figure>';
       h+='</div>';
     }
     h+='<p class="lede">Our favorite places nearby, with drive times from the house.</p>'+
@@ -1859,9 +1855,9 @@
     var amenitiesUrl=walden.amenitiesUrl||'';
     if(map||amenitiesUrl){
       h+='<div class="map-row">';
-      if(amenitiesUrl)h+='<div><div class="qr local-qr" id="waldenQR"></div>'+
+      if(amenitiesUrl)h+='<div class="map-qr"><div class="qr local-qr" id="waldenQR"></div>'+
         '<p class="lede">Scan for Walden amenity hours and details.</p></div>';
-      if(map)h+='<div><div class="qr local-qr" id="localQR"></div>'+
+      if(map)h+='<div class="map-qr map-qr-end"><div class="qr local-qr" id="localQR"></div>'+
         '<p class="lede">Scan to open a map of restaurants and things to do around the lake on your phone.</p></div>';
       h+='</div>';
     }
