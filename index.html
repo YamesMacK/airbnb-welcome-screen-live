@@ -489,7 +489,7 @@
 </main>
 
 <script src="assets/qrcode.min.js"></script>
-<script src="assets/apply-stay.js?v=3"></script>
+<script src="assets/apply-stay.js?v=5"></script>
 <script>
 (function(){
   "use strict";
@@ -507,6 +507,19 @@
   var SHARED_CONFIG_KEY='ssh-shared-config-v1:'+new URL('.',location.href).pathname;
   var setupMode=new URLSearchParams(location.search).has('setup');
   var idleFocus=null;
+  /* Fully repeats a wake every week, so re-check it whenever this page runs:
+     on load, when the screen comes back, and each minute while it is showing. */
+  function syncWake(){
+    try{if(typeof syncTvWake==='function')syncTvWake(window.fully,localStorage,new Date());}catch(e){}
+  }
+  function followWake(checkIn){
+    try{if(typeof followStayWake==='function')followStayWake(localStorage,checkIn);}catch(e){}
+    syncWake();
+  }
+  syncWake();
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)syncWake();});
+  window.addEventListener('pageshow',syncWake);
+  setInterval(syncWake,60*1000);
   (function consumeSetStay(){
     var done=false;
     function run(){
@@ -517,6 +530,8 @@
       if(!result.applied)return;
       done=true;
       try{localStorage.setItem(DEVICE_CONFIG_KEY,result.next);}catch(e){return;}
+      try{recordStayWake(localStorage,result);}catch(e){}
+      syncWake();
       if(window.fully&&typeof window.fully.loadStartURL==='function'){
         try{window.fully.loadStartURL();return;}catch(e){}
       }
@@ -1435,6 +1450,7 @@
         showSetupAlert('This browser blocked access to local storage, so device data could not be cleared.');
         return;
       }
+      followWake('');
       leaveSetup();
     });
     document.getElementById('setupGuestName').focus();
@@ -1477,6 +1493,7 @@
     };
     var error=writeDeviceConfig(value);
     if(error){showSetupAlert(error);return;}
+    followWake(hasStay?checkIn:'');
     leaveSetup();
   }
 

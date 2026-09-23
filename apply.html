@@ -6,7 +6,7 @@
 <title>Updating stay</title>
 </head>
 <body>
-<script src="assets/apply-stay.js?v=4"></script>
+<script src="assets/apply-stay.js?v=5"></script>
 <script>
 (function(){
   var KEY='ssh-device-config-v1';
@@ -18,6 +18,10 @@
   if(result.applied){
     try{localStorage.setItem(KEY,result.next);}catch(e){}
   }
+  try{
+    recordStayWake(localStorage,result);
+    if(typeof syncTvWake==='function')syncTvWake(window.fully,localStorage,new Date());
+  }catch(e){}
   location.replace('index.html');
 })();
 </script>

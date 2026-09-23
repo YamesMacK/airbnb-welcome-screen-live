@@ -3,7 +3,7 @@
 // Only public, static site files enter this cache. Device details stay in the
 // page's local storage; config.json uses the page's sanitized last-good copy.
 // Bump RELEASE when changing this list. Successful network responses always win.
-const RELEASE = '2026-09-22-1';
+const RELEASE = '2026-09-23-1';
 const PREFIX = 'ssh-shell:' + self.registration.scope + ':';
 const CACHE = PREFIX + RELEASE;
 const FILES = [

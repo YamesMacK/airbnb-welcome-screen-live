@@ -37,6 +37,12 @@
     border:2px solid #0A5E2E}
   details{margin-top:28px;color:var(--pencil);font-size:14px}
   summary{cursor:pointer;font-weight:700}
+  .auto-on{margin:0 0 16px;padding:14px 14px 2px;border:2px solid var(--ink);border-radius:14px;background:var(--paper)}
+  .toggle{display:flex;align-items:center;gap:12px;margin:0 0 14px;cursor:pointer}
+  .toggle input{flex:none;width:26px;height:26px;margin:0;padding:0;accent-color:var(--ink)}
+  .auto-on input:disabled{opacity:.45}
+  .auto-on input[type=time]{margin-bottom:10px}
+  .auto-on .note{margin:0 0 12px}
 </style>
 </head>
 <body>
@@ -52,6 +58,12 @@
     <input id="checkIn" type="date" required>
     <label for="checkOut">Check-out</label>
     <input id="checkOut" type="date" required>
+    <div class="auto-on">
+      <label class="toggle" for="autoOn"><input id="autoOn" type="checkbox" checked>Turn the TV on at check-in</label>
+      <label for="wakeTime">Check-in time</label>
+      <input id="wakeTime" type="time" step="60">
+      <p class="note" id="wakeNote" aria-live="polite"></p>
+    </div>
     <button type="submit">Save on the lake TV</button>
     <button class="secondary" id="preview" type="button">Show the TV</button>
     <button class="secondary" id="clear" type="button">Clear stay</button>
@@ -66,7 +78,7 @@
     <input id="password" type="password" autocomplete="current-password">
   </details>
 </main>
-<script src="assets/apply-stay.js?v=4"></script>
+<script src="assets/apply-stay.js?v=5"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
@@ -76,13 +88,38 @@
   function load(){
     try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}
   }
+  function remember(changes){
+    var next=load();
+    Object.keys(changes).forEach(function(k){next[k]=changes[k];});
+    try{localStorage.setItem(KEY,JSON.stringify(next));}catch(e){}
+  }
   function saveRemote(host,password){
-    localStorage.setItem(KEY,JSON.stringify({host:host,password:password}));
+    remember({host:host,password:password});
   }
   var stored=load();
   if(stored.host && stored.host.replace(/\/$/,'')!=='http://shield:2323') $('host').value=stored.host;
   else $('host').value=DEFAULT_HOST;
   if(stored.password)$('password').value=stored.password;
+  $('autoOn').checked=stored.autoOn!==false;
+
+  function wakeState(){
+    return describeTvWake($('checkIn').value,$('wakeTime').value,$('autoOn').checked,new Date());
+  }
+  function renderWake(){
+    $('wakeTime').disabled=!$('autoOn').checked;
+    $('wakeNote').textContent=wakeState().text;
+  }
+  ['autoOn','wakeTime','checkIn'].forEach(function(id){
+    $(id).addEventListener('input',renderWake);
+    $(id).addEventListener('change',renderWake);
+  });
+  $('autoOn').addEventListener('change',function(){remember({autoOn:$('autoOn').checked});});
+  renderWake();
+  fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(c){
+    var time=checkInWakeTime(c&&c.houseRules&&c.houseRules.checkInTime);
+    if(time&&!$('wakeTime').value)$('wakeTime').value=time;
+    renderWake();
+  }).catch(function(){});
 
   function show(el,msg){
     $('alert').hidden=true;$('ok').hidden=true;
@@ -90,7 +127,8 @@
     el.textContent=msg||'';
   }
   function stayUrl(name,checkIn,checkOut){
-    var payload=name?{n:name,in:checkIn,out:checkOut}:{clear:true};
+    var wake=$('autoOn').checked?$('wakeTime').value:'off';
+    var payload=name?{n:name,in:checkIn,out:checkOut,wake:wake}:{clear:true,wake:'off'};
     return APPLY+'?setStay='+encodeStayPayload(payload);
   }
   function fullyPost(cmd, extra){
@@ -131,6 +169,11 @@
     }
     if(checkIn>checkOut){
       show($('alert'),'Check-out needs to be on or after check-in.');
+      return;
+    }
+    var wake=wakeState();
+    if(wake.state==='incomplete'){
+      show($('alert'),wake.text);
       return;
     }
     send(name,checkIn,checkOut);
