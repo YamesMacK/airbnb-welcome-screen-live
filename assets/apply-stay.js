@@ -156,6 +156,21 @@ function describeTvWake(checkIn, time, enabled, now) {
   return { state: 'armed', text: 'The TV will turn on at ' + clock + ' on ' + label + ' and stay on until the guest turns it off.' };
 }
 
+// Fully authenticates and dispatches on the query string. Without type=json its
+// response is the Remote Admin settings document. getScreenshot must stay a raw PNG.
+function fullyCommandUrl(host, password, cmd, extra) {
+  var params = new URLSearchParams();
+  params.set('cmd', cmd);
+  params.set('password', password == null ? '' : String(password));
+  if (cmd !== 'getScreenshot') params.set('type', 'json');
+  if (extra) {
+    Object.keys(extra).forEach(function(k) {
+      if (extra[k] != null && extra[k] !== '') params.set(k, String(extra[k]));
+    });
+  }
+  return String(host || '').replace(/\/$/, '') + '/?' + params.toString();
+}
+
 function applyStayFromQuery(search, rawStorage, hash) {
   var payload = stayPayloadFromLocation(search, hash);
   if (!payload || typeof payload !== 'object') return { applied: false };
@@ -191,6 +206,7 @@ if (typeof module !== 'undefined') {
     describeTvWake: describeTvWake,
     followStayWake: followStayWake,
     recordStayWake: recordStayWake,
+    fullyCommandUrl: fullyCommandUrl,
     TV_WAKE_KEY: TV_WAKE_KEY
   };
 }

@@ -48,10 +48,10 @@
 <body>
 <main>
   <h1>SSH TV</h1>
-  <p class="lead">Turn Tailscale on, then save. Confirm with Show the TV.</p>
+  <p class="lead">Turn Tailscale on, then save. The picture of the TV opens when the stay is on the screen.</p>
   <p class="alert" id="alert" hidden></p>
   <p class="ok" id="ok" hidden></p>
-  <form id="form">
+  <form id="form" autocomplete="on">
     <label for="name">Guest or family name</label>
     <input id="name" autocomplete="off" maxlength="100">
     <label for="checkIn">Check-in</label>
@@ -67,18 +67,18 @@
     <button type="submit">Save on the lake TV</button>
     <button class="secondary" id="preview" type="button">Show the TV</button>
     <button class="secondary" id="clear" type="button">Clear stay</button>
+    <details>
+      <summary>First-time setup (James)</summary>
+      <p class="note">This phone's browser keeps the Fully password. Shared Tailscale users need the full Shield address below, not shield:2323.</p>
+      <label for="host">Fully address</label>
+      <input id="host" name="username" value="http://shield.tail240fad.ts.net:2323" autocomplete="username">
+      <label for="password">Fully remote-admin password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password">
+    </details>
   </form>
-  <p class="note">After Save, tap Back, wait a few seconds, then tap Show the TV. That picture is the Shield.</p>
-  <details>
-    <summary>First-time setup (James)</summary>
-    <p class="note">The Fully remote-admin password is stored only on this phone. Shared Tailscale users need the full Shield address below, not shield:2323.</p>
-    <label for="host">Fully address</label>
-    <input id="host" value="http://shield.tail240fad.ts.net:2323" autocomplete="off">
-    <label for="password">Fully remote-admin password</label>
-    <input id="password" type="password" autocomplete="current-password">
-  </details>
+  <p class="note">Save sends the stay, waits for the welcome screen to paint, then opens a picture of the Shield.</p>
 </main>
-<script src="assets/apply-stay.js?v=5"></script>
+<script src="assets/apply-stay.js?v=6"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
@@ -94,12 +94,25 @@
     try{localStorage.setItem(KEY,JSON.stringify(next));}catch(e){}
   }
   function saveRemote(host,password){
+    if(!password)return;
     remember({host:host,password:password});
+  }
+  function restorePassword(){
+    var stored=load();
+    var field=$('password');
+    if(stored.password&&field&&!field.value)field.value=stored.password;
   }
   var stored=load();
   if(stored.host && stored.host.replace(/\/$/,'')!=='http://shield:2323') $('host').value=stored.host;
   else $('host').value=DEFAULT_HOST;
-  if(stored.password)$('password').value=stored.password;
+  restorePassword();
+  window.addEventListener('pageshow',restorePassword);
+  [0,400,1200].forEach(function(ms){setTimeout(restorePassword,ms);});
+  function rememberRemote(){
+    saveRemote(($('host').value||DEFAULT_HOST).replace(/\/$/,''),$('password').value);
+  }
+  $('password').addEventListener('input',rememberRemote);
+  $('host').addEventListener('change',rememberRemote);
   $('autoOn').checked=stored.autoOn!==false;
 
   function wakeState(){
@@ -131,31 +144,45 @@
     var payload=name?{n:name,in:checkIn,out:checkOut,wake:wake}:{clear:true,wake:'off'};
     return APPLY+'?setStay='+encodeStayPayload(payload);
   }
-  function fullyPost(cmd, extra){
+  var CONFIRM_MS=4000;
+  function commandUrl(cmd, extra){
+    var host=($('host').value||DEFAULT_HOST).replace(/\/$/,'');
+    return fullyCommandUrl(host,$('password').value,cmd,extra);
+  }
+  function requirePassword(){
     var host=($('host').value||DEFAULT_HOST).replace(/\/$/,'');
     var password=$('password').value;
     if(!password){
       show($('alert'),'Open First-time setup and enter the Fully password. Once is enough.');
-      return;
+      return false;
     }
     saveRemote(host,password);
-    var form=document.createElement('form');
-    form.method='POST';
-    form.action=host+'/';
-    function add(n,v){
-      var i=document.createElement('input');
-      i.type='hidden';i.name=n;i.value=v;form.appendChild(i);
-    }
-    add('cmd',cmd);
-    add('password',password);
-    if(extra){
-      Object.keys(extra).forEach(function(k){ add(k, extra[k]); });
-    }
-    document.body.appendChild(form);
-    form.submit();
+    return true;
+  }
+  function offerSavedPassword(){
+    try{
+      if(window.PasswordCredential&&navigator.credentials&&navigator.credentials.store){
+        navigator.credentials.store(new PasswordCredential($('form'))).catch(function(){});
+      }
+    }catch(e){}
+  }
+  function showScreenshot(){
+    location.assign(commandUrl('getScreenshot'));
   }
   function send(name,checkIn,checkOut){
-    fullyPost('loadURL',{url:stayUrl(name,checkIn,checkOut)});
+    if(!requirePassword())return;
+    offerSavedPassword();
+    var url=commandUrl('loadURL',{url:stayUrl(name,checkIn,checkOut)});
+    var popup=window.open(url,'ssh-fully');
+    if(!popup){
+      location.assign(url);
+      return;
+    }
+    show($('ok'),'Sent. Opening the TV picture.');
+    setTimeout(function(){
+      try{if(popup&&!popup.closed)popup.close();}catch(e){}
+      showScreenshot();
+    },CONFIRM_MS);
   }
 
   $('form').addEventListener('submit',function(e){
@@ -179,7 +206,8 @@
     send(name,checkIn,checkOut);
   });
   $('preview').addEventListener('click',function(){
-    fullyPost('getScreenshot');
+    if(!requirePassword())return;
+    showScreenshot();
   });
   $('clear').addEventListener('click',function(){
     if(!confirm('Show the generic welcome on the TV?'))return;
