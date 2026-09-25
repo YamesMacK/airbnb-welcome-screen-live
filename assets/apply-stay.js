@@ -171,6 +171,20 @@ function fullyCommandUrl(host, password, cmd, extra) {
   return String(host || '').replace(/\/$/, '') + '/?' + params.toString();
 }
 
+// A sleeping Shield photographs as a solid page background. Wake first, then
+// wait for the webview to paint before asking for the picture. A blocked
+// pop-up must not fall through to that empty picture.
+var TV_PICTURE_DELAY_MS = 4000;
+function openTvPicture(openUrl, later, now) {
+  var wake = openUrl('screenOn', String(now()));
+  if (!wake || wake.closed) return false;
+  later(TV_PICTURE_DELAY_MS, function () {
+    try { if (typeof wake.close === 'function') wake.close(); } catch (e) {}
+    openUrl('getScreenshot', String(now()));
+  });
+  return true;
+}
+
 function applyStayFromQuery(search, rawStorage, hash) {
   var payload = stayPayloadFromLocation(search, hash);
   if (!payload || typeof payload !== 'object') return { applied: false };
@@ -207,6 +221,8 @@ if (typeof module !== 'undefined') {
     followStayWake: followStayWake,
     recordStayWake: recordStayWake,
     fullyCommandUrl: fullyCommandUrl,
+    openTvPicture: openTvPicture,
+    TV_PICTURE_DELAY_MS: TV_PICTURE_DELAY_MS,
     TV_WAKE_KEY: TV_WAKE_KEY
   };
 }

@@ -76,9 +76,9 @@
       <input id="password" name="password" type="password" autocomplete="current-password">
     </details>
   </form>
-  <p class="note">Save sends the stay, waits for the welcome screen to paint, then opens a picture of the Shield.</p>
+  <p class="note">Save sends the stay, waits for the welcome screen to paint, then opens a picture of the Shield. Show the TV turns the screen on before it takes that picture.</p>
 </main>
-<script src="assets/apply-stay.js?v=6"></script>
+<script src="assets/apply-stay.js?v=7"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
@@ -167,7 +167,24 @@
     }catch(e){}
   }
   function showScreenshot(){
-    location.assign(commandUrl('getScreenshot'));
+    location.assign(commandUrl('getScreenshot',{t:String(Date.now())}));
+  }
+  function showTheTv(){
+    if(!requirePassword())return;
+    var started=openTvPicture(function(cmd,stamp){
+      var url=commandUrl(cmd,{t:stamp});
+      if(cmd==='getScreenshot'){
+        location.assign(url);
+        return null;
+      }
+      return window.open(url,'ssh-fully-wake');
+    },function(ms,fn){setTimeout(fn,ms);},function(){return Date.now();});
+    if(!started){
+      show($('alert'),'Allow pop-ups for this page, then tap Show the TV again.');
+      return;
+    }
+    show($('ok'),'Turning the screen on. The picture loads in a few seconds.');
+    $('preview').disabled=true;
   }
   function send(name,checkIn,checkOut){
     if(!requirePassword())return;
@@ -205,10 +222,7 @@
     }
     send(name,checkIn,checkOut);
   });
-  $('preview').addEventListener('click',function(){
-    if(!requirePassword())return;
-    showScreenshot();
-  });
+  $('preview').addEventListener('click',showTheTv);
   $('clear').addEventListener('click',function(){
     if(!confirm('Show the generic welcome on the TV?'))return;
     $('checkIn').required=false;
