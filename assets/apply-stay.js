@@ -171,18 +171,45 @@ function fullyCommandUrl(host, password, cmd, extra) {
   return String(host || '').replace(/\/$/, '') + '/?' + params.toString();
 }
 
-// A sleeping Shield photographs as a solid page background. Wake first, then
-// wait for the webview to paint before asking for the picture. A blocked
-// pop-up must not fall through to that empty picture.
-var TV_PICTURE_DELAY_MS = 4000;
-function openTvPicture(openUrl, later, now) {
-  var wake = openUrl('screenOn', String(now()));
-  if (!wake || wake.closed) return false;
-  later(TV_PICTURE_DELAY_MS, function () {
-    try { if (typeof wake.close === 'function') wake.close(); } catch (e) {}
-    openUrl('getScreenshot', String(now()));
+// After a long sleep, Android TV's home screen comes up in front of Fully for up to about 6 s, and
+// Fully reloads its start page on screen-on and again when it returns to the front. A picture taken
+// in that window is a blank page, and a stay loaded in it is thrown away. So wake, pull Fully
+// forward once the home screen has taken its turn, and send nothing else until the window has
+// passed. openUrl(cmd, extra, win) reuses the wake pop-up when given one. A blocked pop-up must not
+// fall through to the empty picture.
+var TV_FOREGROUND_DELAY_MS = 3000;
+var TV_PICTURE_DELAY_MS = 9000;
+var TV_STAY_DELAY_MS = 8000;
+var TV_STAY_PAINT_MS = 4000;
+function wakeTv(openUrl, later, now, readyMs, ready) {
+  var win = openUrl('screenOn', { t: String(now()) });
+  if (!win || win.closed) return false;
+  later(TV_FOREGROUND_DELAY_MS, function () {
+    openUrl('toForeground', { t: String(now()) }, win);
   });
+  later(readyMs, function () { ready(win); });
   return true;
+}
+
+function closeQuietly(win) {
+  try { if (win && typeof win.close === 'function') win.close(); } catch (e) {}
+}
+
+function openTvPicture(openUrl, later, now) {
+  return wakeTv(openUrl, later, now, TV_PICTURE_DELAY_MS, function (win) {
+    closeQuietly(win);
+    openUrl('getScreenshot', { t: String(now()) });
+  });
+}
+
+function sendStayThenPicture(openUrl, later, now, stayUrl) {
+  return wakeTv(openUrl, later, now, TV_STAY_DELAY_MS, function (win) {
+    openUrl('loadURL', { url: stayUrl, t: String(now()) }, win);
+    later(TV_STAY_PAINT_MS, function () {
+      closeQuietly(win);
+      openUrl('getScreenshot', { t: String(now()) });
+    });
+  });
 }
 
 function applyStayFromQuery(search, rawStorage, hash) {
@@ -222,7 +249,11 @@ if (typeof module !== 'undefined') {
     recordStayWake: recordStayWake,
     fullyCommandUrl: fullyCommandUrl,
     openTvPicture: openTvPicture,
+    sendStayThenPicture: sendStayThenPicture,
+    TV_FOREGROUND_DELAY_MS: TV_FOREGROUND_DELAY_MS,
     TV_PICTURE_DELAY_MS: TV_PICTURE_DELAY_MS,
+    TV_STAY_DELAY_MS: TV_STAY_DELAY_MS,
+    TV_STAY_PAINT_MS: TV_STAY_PAINT_MS,
     TV_WAKE_KEY: TV_WAKE_KEY
   };
 }

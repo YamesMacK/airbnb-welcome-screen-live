@@ -76,9 +76,9 @@
       <input id="password" name="password" type="password" autocomplete="current-password">
     </details>
   </form>
-  <p class="note">Save sends the stay, waits for the welcome screen to paint, then opens a picture of the Shield. Show the TV turns the screen on before it takes that picture.</p>
+  <p class="note">Save and Show the TV both wake the Shield and bring the welcome screen to the front first, so each takes about 10 seconds before the picture of the TV opens.</p>
 </main>
-<script src="assets/apply-stay.js?v=7"></script>
+<script src="assets/apply-stay.js?v=8"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
@@ -144,7 +144,6 @@
     var payload=name?{n:name,in:checkIn,out:checkOut,wake:wake}:{clear:true,wake:'off'};
     return APPLY+'?setStay='+encodeStayPayload(payload);
   }
-  var CONFIRM_MS=4000;
   function commandUrl(cmd, extra){
     var host=($('host').value||DEFAULT_HOST).replace(/\/$/,'');
     return fullyCommandUrl(host,$('password').value,cmd,extra);
@@ -166,40 +165,36 @@
       }
     }catch(e){}
   }
-  function showScreenshot(){
-    location.assign(commandUrl('getScreenshot',{t:String(Date.now())}));
+  function fullyStep(cmd,extra,win){
+    var url=commandUrl(cmd,extra);
+    if(cmd==='getScreenshot'){
+      location.assign(url);
+      return null;
+    }
+    if(win){
+      try{win.location.replace(url);return win;}catch(e){}
+    }
+    return window.open(url,'ssh-fully-wake');
   }
+  function later(ms,fn){setTimeout(fn,ms);}
+  function clock(){return Date.now();}
   function showTheTv(){
     if(!requirePassword())return;
-    var started=openTvPicture(function(cmd,stamp){
-      var url=commandUrl(cmd,{t:stamp});
-      if(cmd==='getScreenshot'){
-        location.assign(url);
-        return null;
-      }
-      return window.open(url,'ssh-fully-wake');
-    },function(ms,fn){setTimeout(fn,ms);},function(){return Date.now();});
-    if(!started){
+    if(!openTvPicture(fullyStep,later,clock)){
       show($('alert'),'Allow pop-ups for this page, then tap Show the TV again.');
       return;
     }
-    show($('ok'),'Turning the screen on. The picture loads in a few seconds.');
+    show($('ok'),'Waking the TV… The picture opens in about 10 seconds.');
     $('preview').disabled=true;
   }
   function send(name,checkIn,checkOut){
     if(!requirePassword())return;
     offerSavedPassword();
-    var url=commandUrl('loadURL',{url:stayUrl(name,checkIn,checkOut)});
-    var popup=window.open(url,'ssh-fully');
-    if(!popup){
-      location.assign(url);
+    if(!sendStayThenPicture(fullyStep,later,clock,stayUrl(name,checkIn,checkOut))){
+      show($('alert'),'Allow pop-ups for this page, then try again.');
       return;
     }
-    show($('ok'),'Sent. Opening the TV picture.');
-    setTimeout(function(){
-      try{if(popup&&!popup.closed)popup.close();}catch(e){}
-      showScreenshot();
-    },CONFIRM_MS);
+    show($('ok'),'Waking the TV… The stay goes on once it is awake, then the TV picture opens in about 12 seconds.');
   }
 
   $('form').addEventListener('submit',function(e){
