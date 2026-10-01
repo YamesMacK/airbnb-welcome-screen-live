@@ -133,10 +133,12 @@
 
   var STAYS_URL='https://cursor-cloud-welcome.tail240fad.ts.net/ssh-stays';
   var SHIELD_DOWN="Can't reach the Shield. If Chrome asks to access devices on your local network, tap Allow. The guest list stays on the Shield, so this page will not show or replace it until that connection works.";
+  var STAYS_UNREAD="Couldn't read the stays. Save and Clear stay off until this page gets a real list from the Shield.";
   var houseTime='';
   var rowSeq=0;
   var sequence={busy:false};
   var staysReady=false;
+  var staysFault='';
   function blankRow(){return {name:'',checkIn:'',checkOut:'',wake:''};}
   function setActionsDisabled(disabled){
     $('preview').disabled=disabled;
@@ -224,13 +226,17 @@
     renderStays(rows);
     setActionsDisabled(sequence.busy);
   }
+  function stayFaultMessage(){
+    return staysFault==='unreadable'?STAYS_UNREAD:SHIELD_DOWN;
+  }
   function readStayList(){
     return fetch(STAYS_URL,{cache:'no-store',targetAddressSpace:'local'}).then(function(r){
-      if(!r.ok)throw new Error('status');
-      return r.json();
-    }).then(function(data){
-      var rows=Array.isArray(data&&data.stays)?data.stays:[];
-      return rows.map(publicStay);
+      return r.json().catch(function(){return null;}).then(function(data){
+        if(data&&data.error==='unreadable')throw new Error('unreadable');
+        if(!r.ok)throw new Error('status');
+        if(!data||!Array.isArray(data.stays))throw new Error('unreadable');
+        return data.stays.map(publicStay);
+      });
     });
   }
   var houseReady=fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return {};});
@@ -242,14 +248,15 @@
         applyLoaded(rows);
         show($('alert'),'');
       });
-    }).catch(function(){
+    }).catch(function(err){
       if(staysReady)return;
       staysReady=false;
+      staysFault=err&&err.message==='unreadable'?'unreadable':'down';
       if(!attempt){
         renderStays([]);
         setActionsDisabled(false);
       }
-      show($('alert'),SHIELD_DOWN);
+      show($('alert'),stayFaultMessage());
       if(attempt<90)setTimeout(function(){loadStayList(attempt+1);},1000);
     });
   }
@@ -309,6 +316,7 @@
     setActionsDisabled(true);
   }
   function sendList(){
+    if(!staysReady)return false;
     if(!requirePassword())return false;
     offerSavedPassword();
     if(!sendStayThenPicture(fullyStep,later,clock,stayUrl())){
@@ -319,6 +327,7 @@
     return true;
   }
   function sendClear(){
+    if(!staysReady)return false;
     if(!requirePassword())return false;
     offerSavedPassword();
     if(!sendStayThenPicture(fullyStep,later,clock,clearUrl())){
@@ -333,7 +342,7 @@
     e.preventDefault();
     if(sequence.busy)return;
     if(!staysReady){
-      show($('alert'),SHIELD_DOWN);
+      show($('alert'),stayFaultMessage());
       return;
     }
     var rows=filledRows();
@@ -357,7 +366,10 @@
   });
   $('preview').addEventListener('click',showTheTv);
   $('clear').addEventListener('click',function(){
-    if(sequence.busy)return;
+    if(sequence.busy||!staysReady){
+      if(!staysReady)show($('alert'),stayFaultMessage());
+      return;
+    }
     if(!confirm('Show the generic welcome on the TV?'))return;
     if(!claimTvSequence(sequence))return;
     if(!sendClear()){endSequence();return;}
