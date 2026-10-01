@@ -132,7 +132,7 @@
   $('host').addEventListener('change',rememberRemote);
 
   var STAYS_URL='https://cursor-cloud-welcome.tail240fad.ts.net/ssh-stays';
-  var SHIELD_DOWN="Can't reach the Shield. The guest list stays there, so this page will not show or replace it until Tailscale can reach the Shield.";
+  var SHIELD_DOWN="Can't reach the Shield. If Chrome asks to access devices on your local network, tap Allow. The guest list stays on the Shield, so this page will not show or replace it until that connection works.";
   var houseTime='';
   var rowSeq=0;
   var sequence={busy:false};
@@ -224,24 +224,36 @@
     renderStays(rows);
     setActionsDisabled(sequence.busy);
   }
-  Promise.all([
-    fetch(STAYS_URL,{cache:'no-store'}).then(function(r){
+  function readStayList(){
+    return fetch(STAYS_URL,{cache:'no-store',targetAddressSpace:'local'}).then(function(r){
       if(!r.ok)throw new Error('status');
       return r.json();
     }).then(function(data){
       var rows=Array.isArray(data&&data.stays)?data.stays:[];
       return rows.map(publicStay);
-    }),
-    fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return {};})
-  ]).then(function(parts){
-    houseTime=checkInWakeTime(parts[1]&&parts[1].houseRules&&parts[1].houseRules.checkInTime)||'';
-    applyLoaded(parts[0]);
-  }).catch(function(){
-    staysReady=false;
-    renderStays([]);
-    setActionsDisabled(false);
-    show($('alert'),SHIELD_DOWN);
-  });
+    });
+  }
+  var houseReady=fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return {};});
+  function loadStayList(attempt){
+    readStayList().then(function(rows){
+      return houseReady.then(function(config){
+        if(staysReady)return;
+        houseTime=checkInWakeTime(config&&config.houseRules&&config.houseRules.checkInTime)||'';
+        applyLoaded(rows);
+        show($('alert'),'');
+      });
+    }).catch(function(){
+      if(staysReady)return;
+      staysReady=false;
+      if(!attempt){
+        renderStays([]);
+        setActionsDisabled(false);
+      }
+      show($('alert'),SHIELD_DOWN);
+      if(attempt<90)setTimeout(function(){loadStayList(attempt+1);},1000);
+    });
+  }
+  loadStayList(0);
   function filledRows(){
     return readRows().filter(function(row){return row.name||row.checkIn||row.checkOut;});
   }
