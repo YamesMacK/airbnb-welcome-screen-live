@@ -5,7 +5,7 @@
 // Bump RELEASE when changing this list. Successful network responses always win.
 // A ?v=<digits> request is the stay script the page asked for. It is cached
 // under that exact URL. Any other query, including a guest update, is not stored.
-const RELEASE = '2026-10-01-1';
+const RELEASE = '2026-10-01-2';
 const FILES = [
   'index.html', 'apply.html', 'stay.html', 'update.html', 'favicon.ico',
   'assets/apply-stay.js', 'assets/favicon.svg', 'assets/qrcode.min.js',
@@ -18,7 +18,7 @@ const FILES = [
   'assets/art/tile-local-favorites.png', 'assets/art/tile-streaming.png',
   'assets/art/house-aerial.png', 'assets/art/tile-wifi.png', 'assets/art/walden-map.png', 'assets/art/weather-doodle.png'
 ];
-const VERSIONED = ['assets/apply-stay.js?v=9'];
+const VERSIONED = ['assets/apply-stay.js?v=10'];
 
 function siteCachePlan(requestHref, scope) {
   const url = new URL(requestHref);

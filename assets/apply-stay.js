@@ -410,11 +410,55 @@ function reconcileDeviceStay(storage, fully, now) {
   var afterRaw = raw;
   try { afterRaw = storage.getItem(DEVICE_CONFIG_KEY); } catch (e) {}
   var guest = shownGuest(afterRaw);
+  var status = syncTvWake(fully, storage, clock);
+  try { publishStaySummary(fully, storage); } catch (e) {}
   return {
-    status: syncTvWake(fully, storage, clock),
+    status: status,
     guestChanged: !sameGuest(before, guest),
     guest: guest
   };
+}
+
+function staySummaryRows(config, wakeRaw) {
+  if (config && Array.isArray(config.stays)) {
+    var cleaned = cleanStayList(config.stays);
+    if (!cleaned.error) {
+      return cleaned.map(function(stay) {
+        return { name: stay.name, checkIn: stay.checkIn, checkOut: stay.checkOut, wake: stay.wake || '' };
+      });
+    }
+  }
+  var guest = config && config.guest && typeof config.guest === 'object' ? config.guest : {};
+  var name = String(guest.name || '').trim();
+  var checkIn = String(guest.checkIn || '').trim();
+  var checkOut = String(guest.checkOut || '').trim();
+  if (!(name || checkIn || checkOut)) return [];
+  var wake = '';
+  var record = parseWake(wakeRaw);
+  if (record && !record.off && WAKE_TIME.test(record.time || '') && (!record.date || record.date === checkIn)) {
+    wake = record.time;
+  }
+  return [{ name: name, checkIn: checkIn, checkOut: checkOut, wake: wake }];
+}
+
+function publishStaySummary(fully, storage) {
+  if (!fully || typeof fully.setStringSetting !== 'function') return 'unavailable';
+  var raw = null;
+  var wakeRaw = null;
+  try { raw = storage.getItem(DEVICE_CONFIG_KEY); } catch (e) { return 'error'; }
+  try { wakeRaw = storage.getItem(TV_WAKE_KEY); } catch (e) {}
+  var want = JSON.stringify(staySummaryRows(parseStore(raw) || {}, wakeRaw));
+  try {
+    var have = '';
+    if (typeof fully.getStringSetting === 'function') {
+      try { have = String(fully.getStringSetting('sshStayList') || ''); } catch (e) { have = ''; }
+    }
+    if (have === want) return 'unchanged';
+    fully.setStringSetting('sshStayList', want);
+    return 'set';
+  } catch (e) {
+    return 'error';
+  }
 }
 
 function deviceRecord(raw) {

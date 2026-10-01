@@ -20,7 +20,15 @@
   html,body{margin:0;min-height:100%;background:var(--ground);color:var(--ink);
     font-family:var(--sans);-webkit-font-smoothing:antialiased}
   body{padding:28px 20px 48px}
-  main{max-width:420px;margin:0 auto}
+  main{max-width:760px;margin:0 auto}
+  .table-wrap{overflow-x:auto;margin:0 0 8px}
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);
+    border:2px solid var(--ink);border-radius:14px}
+  th,td{padding:8px;text-align:left;vertical-align:top}
+  th{font-size:13px}
+  td input{margin:0;padding:10px 8px}
+  .stay-note{margin:6px 0 0}
+  button.stay-remove{width:auto;margin:0;padding:10px 12px;font-size:14px}
   h1{font-family:var(--sans);font-weight:700;font-size:36px;line-height:1.1;margin:0 0 8px}
   .lead{margin:0 0 24px;line-height:1.45;color:var(--pencil);font-size:16px}
   label{display:block;font-weight:700;margin:0 0 6px}
@@ -37,8 +45,7 @@
     border:2px solid #0A5E2E}
   details{margin-top:28px;color:var(--pencil);font-size:14px}
   summary{cursor:pointer;font-weight:700}
-  .stay{margin:0 0 16px;padding:14px 14px 4px;border:2px solid var(--ink);border-radius:14px;background:var(--paper)}
-  .stay .note{margin:0 0 12px}
+  .stay .note{margin:6px 0 0}
   .stay button{margin-top:0}
   button.add{margin-bottom:8px}
 </style>
@@ -46,12 +53,25 @@
 <body>
 <main>
   <h1>SSH TV</h1>
-  <p class="lead">Turn Tailscale on, then save. One save sends the whole list. Leave the guest who is already on the TV as a row unless you mean to change that stay. A blank turn-on time does not turn the TV on.</p>
+  <p class="lead">Turn Tailscale on. This page reads the guest list from the Shield. One save sends the whole list. A blank TV on time does not turn the TV on.</p>
   <p class="alert" id="alert" hidden></p>
   <p class="alert" id="overlap" hidden></p>
   <p class="ok" id="ok" hidden></p>
   <form id="form" autocomplete="on">
-    <div id="stays"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Guest</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>TV on</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="stays"></tbody>
+      </table>
+    </div>
     <button class="secondary add" id="add" type="button">Add a stay</button>
     <button type="submit">Save on the lake TV</button>
     <button class="secondary" id="preview" type="button">Show the TV</button>
@@ -67,7 +87,7 @@
   </form>
   <p class="note">Save and Show the TV both wake the Shield and bring the welcome screen to the front first, so each takes about 10 seconds before the picture of the TV opens.</p>
 </main>
-<script src="assets/apply-stay.js?v=9"></script>
+<script src="assets/apply-stay.js?v=10"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
@@ -111,16 +131,19 @@
   $('password').addEventListener('input',rememberRemote);
   $('host').addEventListener('change',rememberRemote);
 
-  try{localStorage.removeItem('ssh-lake-tv-stays-v1');}catch(e){}
+  var STAYS_URL='https://cursor-cloud-welcome.tail240fad.ts.net/ssh-stays';
+  var SHIELD_DOWN="Can't reach the Shield. The guest list stays there, so this page will not show or replace it until Tailscale can reach the Shield.";
   var houseTime='';
   var rowSeq=0;
   var sequence={busy:false};
+  var staysReady=false;
   function blankRow(){return {name:'',checkIn:'',checkOut:'',wake:''};}
   function setActionsDisabled(disabled){
     $('preview').disabled=disabled;
-    $('clear').disabled=disabled;
+    $('add').disabled=disabled||!staysReady;
+    $('clear').disabled=disabled||!staysReady;
     var submit=$('form').querySelector('button[type="submit"]');
-    if(submit)submit.disabled=disabled;
+    if(submit)submit.disabled=disabled||!staysReady;
   }
   function readRows(){
     return Array.prototype.map.call(document.querySelectorAll('#stays .stay'),function(el){
@@ -144,19 +167,15 @@
   }
   function paintRow(row){
     var id=++rowSeq;
-    var el=document.createElement('div');
+    var el=document.createElement('tr');
     el.className='stay';
     el.innerHTML=
-      '<label for="stay-name-'+id+'">Guest or family name</label>'+
-      '<input id="stay-name-'+id+'" class="stay-name" maxlength="100" autocomplete="off">'+
-      '<label for="stay-in-'+id+'">Check-in</label>'+
-      '<input id="stay-in-'+id+'" class="stay-in" type="date">'+
-      '<label for="stay-out-'+id+'">Check-out</label>'+
-      '<input id="stay-out-'+id+'" class="stay-out" type="date">'+
-      '<label for="stay-wake-'+id+'">Turn-on time</label>'+
-      '<input id="stay-wake-'+id+'" class="stay-wake" type="time" step="60">'+
-      '<p class="note stay-note" aria-live="polite"></p>'+
-      '<button class="secondary stay-remove" type="button">Remove</button>';
+      '<td><input id="stay-name-'+id+'" class="stay-name" maxlength="100" autocomplete="off" aria-label="Guest"></td>'+
+      '<td><input id="stay-in-'+id+'" class="stay-in" type="date" aria-label="Check-in"></td>'+
+      '<td><input id="stay-out-'+id+'" class="stay-out" type="date" aria-label="Check-out"></td>'+
+      '<td><input id="stay-wake-'+id+'" class="stay-wake" type="time" step="60" aria-label="TV on">'+
+      '<p class="note stay-note" aria-live="polite"></p></td>'+
+      '<td><button class="secondary stay-remove" type="button">Remove</button></td>';
     el.querySelector('.stay-name').value=row.name||'';
     el.querySelector('.stay-in').value=row.checkIn||'';
     el.querySelector('.stay-out').value=row.checkOut||'';
@@ -176,15 +195,7 @@
     rows.forEach(function(row){host.appendChild(paintRow(row));});
     refreshNotes();
   }
-  renderStays([blankRow()]);
-  fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(c){
-    houseTime=checkInWakeTime(c&&c.houseRules&&c.houseRules.checkInTime)||'';
-    var rows=readRows();
-    if(houseTime&&rows.length===1&&!rows[0].name&&!rows[0].checkIn&&!rows[0].checkOut&&!rows[0].wake){
-      rows[0].wake=houseTime;
-      renderStays(rows);
-    }
-  }).catch(function(){});
+  setActionsDisabled(false);
   $('add').addEventListener('click',function(){
     var rows=readRows();
     rows.push(blankRow());
@@ -196,6 +207,41 @@
     el.hidden=!msg;
     el.textContent=msg||'';
   }
+  function publicStay(row){
+    return {
+      name:String(row&&row.name||'').trim(),
+      checkIn:String(row&&row.checkIn||''),
+      checkOut:String(row&&row.checkOut||''),
+      wake:String(row&&row.wake||'')
+    };
+  }
+  function applyLoaded(rows){
+    if(!rows.length)rows=[blankRow()];
+    if(houseTime&&rows.length===1&&!rows[0].name&&!rows[0].checkIn&&!rows[0].checkOut&&!rows[0].wake){
+      rows[0].wake=houseTime;
+    }
+    staysReady=true;
+    renderStays(rows);
+    setActionsDisabled(sequence.busy);
+  }
+  Promise.all([
+    fetch(STAYS_URL,{cache:'no-store'}).then(function(r){
+      if(!r.ok)throw new Error('status');
+      return r.json();
+    }).then(function(data){
+      var rows=Array.isArray(data&&data.stays)?data.stays:[];
+      return rows.map(publicStay);
+    }),
+    fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return {};})
+  ]).then(function(parts){
+    houseTime=checkInWakeTime(parts[1]&&parts[1].houseRules&&parts[1].houseRules.checkInTime)||'';
+    applyLoaded(parts[0]);
+  }).catch(function(){
+    staysReady=false;
+    renderStays([]);
+    setActionsDisabled(false);
+    show($('alert'),SHIELD_DOWN);
+  });
   function filledRows(){
     return readRows().filter(function(row){return row.name||row.checkIn||row.checkOut;});
   }
@@ -274,6 +320,10 @@
   $('form').addEventListener('submit',function(e){
     e.preventDefault();
     if(sequence.busy)return;
+    if(!staysReady){
+      show($('alert'),SHIELD_DOWN);
+      return;
+    }
     var rows=filledRows();
     if(!rows.length){
       show($('alert'),'Enter a guest name and both dates.');
