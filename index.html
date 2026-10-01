@@ -510,10 +510,18 @@
   /* Fully repeats a wake every week, so re-check it whenever this page runs:
      on load, when the screen comes back, and each minute while it is showing. */
   function syncWake(){
+    var result=null;
     try{
-      if(typeof reconcileDeviceStay==='function')reconcileDeviceStay(localStorage,window.fully,new Date());
+      if(typeof reconcileDeviceStay==='function')result=reconcileDeviceStay(localStorage,window.fully,new Date());
       else if(typeof syncTvWake==='function')syncTvWake(window.fully,localStorage,new Date());
     }catch(e){}
+    return paintReconciledGuest(result);
+  }
+  function paintReconciledGuest(result){
+    if(!cfg||!result||!result.guestChanged||!result.guest)return false;
+    cfg.guest={name:result.guest.name||'',checkIn:result.guest.checkIn||'',checkOut:result.guest.checkOut||''};
+    applyConfig(cfg,[]);
+    return true;
   }
   function followWake(checkIn){
     try{if(typeof followStayWake==='function')followStayWake(localStorage,checkIn);}catch(e){}
@@ -1326,19 +1334,7 @@
   }
 
   function refreshExpiredGuest(){
-    var before=null;
-    try{before=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return false;}
-    syncWake();
-    var after=null;
-    try{after=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return false;}
-    if(before===after)return false;
-    var parsed=null;
-    try{parsed=JSON.parse(after);}catch(e){return true;}
-    if(cfg&&parsed&&isObj(parsed.guest)){
-      cfg.guest={name:parsed.guest.name||'',checkIn:parsed.guest.checkIn||'',checkOut:parsed.guest.checkOut||''};
-      applyConfig(cfg,[]);
-    }
-    return true;
+    return syncWake();
   }
 
   // A partial response/cache must not erase content that ships with this release.

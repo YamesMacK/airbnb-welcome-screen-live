@@ -95,7 +95,15 @@
   if(stored.host && stored.host.replace(/\/$/,'')!=='http://shield:2323') $('host').value=stored.host;
   else $('host').value=DEFAULT_HOST;
   restorePassword();
-  window.addEventListener('pageshow',restorePassword);
+  function endSequence(){
+    releaseTvSequence(sequence);
+    setActionsDisabled(false);
+  }
+  function onPageShow(){
+    restorePassword();
+    endSequence();
+  }
+  window.addEventListener('pageshow',onPageShow);
   [0,400,1200].forEach(function(ms){setTimeout(restorePassword,ms);});
   function rememberRemote(){
     saveRemote(($('host').value||DEFAULT_HOST).replace(/\/$/,''),$('password').value);
@@ -103,21 +111,16 @@
   $('password').addEventListener('input',rememberRemote);
   $('host').addEventListener('change',rememberRemote);
 
-  var STAYS_KEY='ssh-lake-tv-stays-v1';
+  try{localStorage.removeItem('ssh-lake-tv-stays-v1');}catch(e){}
   var houseTime='';
   var rowSeq=0;
+  var sequence={busy:false};
   function blankRow(){return {name:'',checkIn:'',checkOut:'',wake:''};}
-  function loadStays(){
-    try{
-      var rows=JSON.parse(localStorage.getItem(STAYS_KEY)||'null');
-      if(Array.isArray(rows)&&rows.length)return rows.map(function(row){
-        return {name:row.name||'',checkIn:row.checkIn||'',checkOut:row.checkOut||'',wake:row.wake||''};
-      });
-    }catch(e){}
-    return [blankRow()];
-  }
-  function rememberStays(rows){
-    try{localStorage.setItem(STAYS_KEY,JSON.stringify(rows));}catch(e){}
+  function setActionsDisabled(disabled){
+    $('preview').disabled=disabled;
+    $('clear').disabled=disabled;
+    var submit=$('form').querySelector('button[type="submit"]');
+    if(submit)submit.disabled=disabled;
   }
   function readRows(){
     return Array.prototype.map.call(document.querySelectorAll('#stays .stay'),function(el){
@@ -158,12 +161,11 @@
     el.querySelector('.stay-in').value=row.checkIn||'';
     el.querySelector('.stay-out').value=row.checkOut||'';
     el.querySelector('.stay-wake').value=row.wake||'';
-    el.addEventListener('input',function(){rememberStays(readRows());refreshNotes();});
-    el.addEventListener('change',function(){rememberStays(readRows());refreshNotes();});
+    el.addEventListener('input',refreshNotes);
+    el.addEventListener('change',refreshNotes);
     el.querySelector('.stay-remove').addEventListener('click',function(){
       var rows=readRows().filter(function(_,i){return $('stays').children[i]!==el;});
       if(!rows.length)rows=[blankRow()];
-      rememberStays(rows);
       renderStays(rows);
     });
     return el;
@@ -174,7 +176,7 @@
     rows.forEach(function(row){host.appendChild(paintRow(row));});
     refreshNotes();
   }
-  renderStays(loadStays());
+  renderStays([blankRow()]);
   fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(c){
     houseTime=checkInWakeTime(c&&c.houseRules&&c.houseRules.checkInTime)||'';
     var rows=readRows();
@@ -186,7 +188,6 @@
   $('add').addEventListener('click',function(){
     var rows=readRows();
     rows.push(blankRow());
-    rememberStays(rows);
     renderStays(rows);
   });
 
@@ -239,22 +240,25 @@
   function later(ms,fn){setTimeout(fn,ms);}
   function clock(){return Date.now();}
   function showTheTv(){
-    if(!requirePassword())return;
+    if(!claimTvSequence(sequence))return;
+    if(!requirePassword()){endSequence();return;}
     if(!openTvPicture(fullyStep,later,clock)){
+      endSequence();
       show($('alert'),'Allow pop-ups for this page, then tap Show the TV again.');
       return;
     }
     show($('ok'),'Waking the TV… The picture opens in about 10 seconds.');
-    $('preview').disabled=true;
+    setActionsDisabled(true);
   }
   function sendList(){
-    if(!requirePassword())return;
+    if(!requirePassword())return false;
     offerSavedPassword();
     if(!sendStayThenPicture(fullyStep,later,clock,stayUrl())){
       show($('alert'),'Allow pop-ups for this page, then try again.');
-      return;
+      return false;
     }
     show($('ok'),'Waking the TV… The stay goes on once it is awake, then the TV picture opens in about 12 seconds.');
+    return true;
   }
   function sendClear(){
     if(!requirePassword())return false;
@@ -269,6 +273,7 @@
 
   $('form').addEventListener('submit',function(e){
     e.preventDefault();
+    if(sequence.busy)return;
     var rows=filledRows();
     if(!rows.length){
       show($('alert'),'Enter a guest name and both dates.');
@@ -284,14 +289,17 @@
         return;
       }
     }
-    rememberStays(rows);
-    sendList();
+    if(!claimTvSequence(sequence))return;
+    if(!sendList()){endSequence();return;}
+    setActionsDisabled(true);
   });
   $('preview').addEventListener('click',showTheTv);
   $('clear').addEventListener('click',function(){
+    if(sequence.busy)return;
     if(!confirm('Show the generic welcome on the TV?'))return;
-    if(!sendClear())return;
-    rememberStays([blankRow()]);
+    if(!claimTvSequence(sequence))return;
+    if(!sendClear()){endSequence();return;}
+    setActionsDisabled(true);
     renderStays([blankRow()]);
   });
 })();

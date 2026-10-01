@@ -181,14 +181,28 @@ var TV_FOREGROUND_DELAY_MS = 3000;
 var TV_PICTURE_DELAY_MS = 9000;
 var TV_STAY_DELAY_MS = 8000;
 var TV_STAY_PAINT_MS = 4000;
+// The ready step is scheduled only after toForeground has been sent. A phone
+// that slept through both delays used to run them back to back.
 function wakeTv(openUrl, later, now, readyMs, ready) {
   var win = openUrl('screenOn', { t: String(now()) });
   if (!win || win.closed) return false;
+  var gap = readyMs - TV_FOREGROUND_DELAY_MS;
+  if (!(gap > 0)) gap = TV_FOREGROUND_DELAY_MS;
   later(TV_FOREGROUND_DELAY_MS, function () {
     openUrl('toForeground', { t: String(now()) }, win);
+    later(gap, function () { ready(win); });
   });
-  later(readyMs, function () { ready(win); });
   return true;
+}
+
+function claimTvSequence(sequence) {
+  if (!sequence || sequence.busy) return false;
+  sequence.busy = true;
+  return true;
+}
+
+function releaseTvSequence(sequence) {
+  if (sequence) sequence.busy = false;
 }
 
 function closeQuietly(win) {
@@ -367,18 +381,40 @@ function settleStoredStay(raw, wakeRaw, now) {
   return { writeConfig: writeConfig, configNext: configNext, writeWake: writeWake, wake: wake };
 }
 
+function shownGuest(raw) {
+  var config = parseStore(raw);
+  if (!config || !config.guest || typeof config.guest !== 'object') {
+    return { name: '', checkIn: '', checkOut: '' };
+  }
+  return {
+    name: String(config.guest.name || ''),
+    checkIn: String(config.guest.checkIn || ''),
+    checkOut: String(config.guest.checkOut || '')
+  };
+}
+
 function reconcileDeviceStay(storage, fully, now) {
   var clock = now instanceof Date ? now : new Date();
   var raw = null;
   var wakeRaw = null;
-  try { raw = storage.getItem(DEVICE_CONFIG_KEY); } catch (e) { return 'error'; }
+  try { raw = storage.getItem(DEVICE_CONFIG_KEY); } catch (e) {
+    return { status: 'error', guestChanged: false, guest: null };
+  }
   try { wakeRaw = storage.getItem(TV_WAKE_KEY); } catch (e) {}
+  var before = shownGuest(raw);
   var settled = settleStoredStay(raw, wakeRaw, clock);
   if (settled && settled.writeConfig && settled.configNext != null) {
     try { storage.setItem(DEVICE_CONFIG_KEY, settled.configNext); } catch (e) {}
   }
   if (settled && settled.writeWake && settled.wake) saveTvWake(storage, settled.wake);
-  return syncTvWake(fully, storage, clock);
+  var afterRaw = raw;
+  try { afterRaw = storage.getItem(DEVICE_CONFIG_KEY); } catch (e) {}
+  var guest = shownGuest(afterRaw);
+  return {
+    status: syncTvWake(fully, storage, clock),
+    guestChanged: !sameGuest(before, guest),
+    guest: guest
+  };
 }
 
 function deviceRecord(raw) {
@@ -512,6 +548,8 @@ if (typeof module !== 'undefined') {
     fullyCommandUrl: fullyCommandUrl,
     openTvPicture: openTvPicture,
     sendStayThenPicture: sendStayThenPicture,
+    claimTvSequence: claimTvSequence,
+    releaseTvSequence: releaseTvSequence,
     reconcileDeviceStay: reconcileDeviceStay,
     settleStoredStay: settleStoredStay,
     deviceRecord: deviceRecord,
