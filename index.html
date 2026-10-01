@@ -489,7 +489,7 @@
 </main>
 
 <script src="assets/qrcode.min.js"></script>
-<script src="assets/apply-stay.js?v=5"></script>
+<script src="assets/apply-stay.js?v=9"></script>
 <script>
 (function(){
   "use strict";
@@ -510,7 +510,10 @@
   /* Fully repeats a wake every week, so re-check it whenever this page runs:
      on load, when the screen comes back, and each minute while it is showing. */
   function syncWake(){
-    try{if(typeof syncTvWake==='function')syncTvWake(window.fully,localStorage,new Date());}catch(e){}
+    try{
+      if(typeof reconcileDeviceStay==='function')reconcileDeviceStay(localStorage,window.fully,new Date());
+      else if(typeof syncTvWake==='function')syncTvWake(window.fully,localStorage,new Date());
+    }catch(e){}
   }
   function followWake(checkIn){
     try{if(typeof followStayWake==='function')followStayWake(localStorage,checkIn);}catch(e){}
@@ -1279,6 +1282,7 @@
   }
 
   function deviceSubset(raw){
+    if(typeof deviceRecord==='function')return deviceRecord(raw);
     if(!isObj(raw))return null;
     var guest=isObj(raw.guest)?raw.guest:{};
     var wifi=isObj(raw.wifi)?raw.wifi:{};
@@ -1321,12 +1325,19 @@
     if(currentPanel&&modal.classList.contains('open'))refreshOpenModal();
   }
 
-  function refreshExpiredGuest(now){
-    var next=withoutExpiredGuest(cfg,now);
-    if(!next)return false;
-    var writeError=writeDeviceConfig(next);
-    applyConfig(next,[]);
-    if(writeError)setSystemStatus('local',writeError);
+  function refreshExpiredGuest(){
+    var before=null;
+    try{before=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return false;}
+    syncWake();
+    var after=null;
+    try{after=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return false;}
+    if(before===after)return false;
+    var parsed=null;
+    try{parsed=JSON.parse(after);}catch(e){return true;}
+    if(cfg&&parsed&&isObj(parsed.guest)){
+      cfg.guest={name:parsed.guest.name||'',checkIn:parsed.guest.checkIn||'',checkOut:parsed.guest.checkOut||''};
+      applyConfig(cfg,[]);
+    }
     return true;
   }
 
@@ -1367,16 +1378,9 @@
       return readSharedConfig()||clone(SAFE_CONFIG);
     }).then(function(base){
       if(!isObj(base)){baseFailed=true;base=clone(SAFE_CONFIG);}
+      syncWake();
       var device=readDeviceConfig();
       deviceError=device.error;
-      if(device.config){
-        var sanitized=withoutExpiredGuest(device.config);
-        if(sanitized){
-          device.config=sanitized;
-          var writeError=writeDeviceConfig(sanitized);
-          if(writeError)deviceError=writeError;
-        }
-      }
       return device.config?mergeConfig(base,device.config):base;
     }).then(function(raw){
       if(seq!==configSeq)return;
@@ -1482,8 +1486,12 @@
     if(!ssid&&password){showSetupAlert('Enter the Wi-Fi network name, or clear its password.');return;}
     if(ssid&&encryption!=='nopass'&&!password){showSetupAlert('Enter the secured Wi-Fi password, or choose Open network.');return;}
     if(encryption==='nopass')password='';
+    var existing=readDeviceConfig().config||{};
+    var edited=typeof editDisplayedStay==='function'
+      ? editDisplayedStay(existing,hasStay?{name:guestName,checkIn:checkIn,checkOut:checkOut}:{name:'',checkIn:'',checkOut:''},new Date())
+      : null;
     var value={
-      guest:{name:guestName,checkIn:checkIn,checkOut:checkOut},
+      guest:edited&&edited.guest?edited.guest:{name:guestName,checkIn:checkIn,checkOut:checkOut},
       wifi:{ssid:ssid,password:password,encryption:encryption},
       safety:{
         address:document.getElementById('setupAddress').value.trim(),
@@ -1491,9 +1499,13 @@
         hostPhone:''
       }
     };
+    if(edited&&Array.isArray(edited.stays))value.stays=edited.stays;
     var error=writeDeviceConfig(value);
     if(error){showSetupAlert(error);return;}
-    followWake(hasStay?checkIn:'');
+    if(edited&&edited.wake){
+      try{saveTvWake(localStorage,edited.wake);}catch(e){}
+      syncWake();
+    }else followWake(hasStay?checkIn:'');
     leaveSetup();
   }
 

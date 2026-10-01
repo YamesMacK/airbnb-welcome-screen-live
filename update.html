@@ -37,33 +37,22 @@
     border:2px solid #0A5E2E}
   details{margin-top:28px;color:var(--pencil);font-size:14px}
   summary{cursor:pointer;font-weight:700}
-  .auto-on{margin:0 0 16px;padding:14px 14px 2px;border:2px solid var(--ink);border-radius:14px;background:var(--paper)}
-  .toggle{display:flex;align-items:center;gap:12px;margin:0 0 14px;cursor:pointer}
-  .toggle input{flex:none;width:26px;height:26px;margin:0;padding:0;accent-color:var(--ink)}
-  .auto-on input:disabled{opacity:.45}
-  .auto-on input[type=time]{margin-bottom:10px}
-  .auto-on .note{margin:0 0 12px}
+  .stay{margin:0 0 16px;padding:14px 14px 4px;border:2px solid var(--ink);border-radius:14px;background:var(--paper)}
+  .stay .note{margin:0 0 12px}
+  .stay button{margin-top:0}
+  button.add{margin-bottom:8px}
 </style>
 </head>
 <body>
 <main>
   <h1>SSH TV</h1>
-  <p class="lead">Turn Tailscale on, then save. The picture of the TV opens when the stay is on the screen.</p>
+  <p class="lead">Turn Tailscale on, then save. One save sends the whole list. Leave the guest who is already on the TV as a row unless you mean to change that stay. A blank turn-on time does not turn the TV on.</p>
   <p class="alert" id="alert" hidden></p>
+  <p class="alert" id="overlap" hidden></p>
   <p class="ok" id="ok" hidden></p>
   <form id="form" autocomplete="on">
-    <label for="name">Guest or family name</label>
-    <input id="name" autocomplete="off" maxlength="100">
-    <label for="checkIn">Check-in</label>
-    <input id="checkIn" type="date" required>
-    <label for="checkOut">Check-out</label>
-    <input id="checkOut" type="date" required>
-    <div class="auto-on">
-      <label class="toggle" for="autoOn"><input id="autoOn" type="checkbox" checked>Turn the TV on at check-in</label>
-      <label for="wakeTime">Check-in time</label>
-      <input id="wakeTime" type="time" step="60">
-      <p class="note" id="wakeNote" aria-live="polite"></p>
-    </div>
+    <div id="stays"></div>
+    <button class="secondary add" id="add" type="button">Add a stay</button>
     <button type="submit">Save on the lake TV</button>
     <button class="secondary" id="preview" type="button">Show the TV</button>
     <button class="secondary" id="clear" type="button">Clear stay</button>
@@ -78,7 +67,7 @@
   </form>
   <p class="note">Save and Show the TV both wake the Shield and bring the welcome screen to the front first, so each takes about 10 seconds before the picture of the TV opens.</p>
 </main>
-<script src="assets/apply-stay.js?v=8"></script>
+<script src="assets/apply-stay.js?v=9"></script>
 <script>
 (function(){
   var KEY='ssh-lake-tv-remote-v1';
@@ -113,36 +102,107 @@
   }
   $('password').addEventListener('input',rememberRemote);
   $('host').addEventListener('change',rememberRemote);
-  $('autoOn').checked=stored.autoOn!==false;
 
-  function wakeState(){
-    return describeTvWake($('checkIn').value,$('wakeTime').value,$('autoOn').checked,new Date());
+  var STAYS_KEY='ssh-lake-tv-stays-v1';
+  var houseTime='';
+  var rowSeq=0;
+  function blankRow(){return {name:'',checkIn:'',checkOut:'',wake:''};}
+  function loadStays(){
+    try{
+      var rows=JSON.parse(localStorage.getItem(STAYS_KEY)||'null');
+      if(Array.isArray(rows)&&rows.length)return rows.map(function(row){
+        return {name:row.name||'',checkIn:row.checkIn||'',checkOut:row.checkOut||'',wake:row.wake||''};
+      });
+    }catch(e){}
+    return [blankRow()];
   }
-  function renderWake(){
-    $('wakeTime').disabled=!$('autoOn').checked;
-    $('wakeNote').textContent=wakeState().text;
+  function rememberStays(rows){
+    try{localStorage.setItem(STAYS_KEY,JSON.stringify(rows));}catch(e){}
   }
-  ['autoOn','wakeTime','checkIn'].forEach(function(id){
-    $(id).addEventListener('input',renderWake);
-    $(id).addEventListener('change',renderWake);
-  });
-  $('autoOn').addEventListener('change',function(){remember({autoOn:$('autoOn').checked});});
-  renderWake();
+  function readRows(){
+    return Array.prototype.map.call(document.querySelectorAll('#stays .stay'),function(el){
+      return {
+        name:el.querySelector('.stay-name').value.trim(),
+        checkIn:el.querySelector('.stay-in').value,
+        checkOut:el.querySelector('.stay-out').value,
+        wake:el.querySelector('.stay-wake').value
+      };
+    });
+  }
+  function refreshNotes(){
+    var rows=readRows();
+    var now=new Date();
+    Array.prototype.forEach.call(document.querySelectorAll('#stays .stay'),function(el,i){
+      el.querySelector('.stay-note').textContent=describeRowWake(rows[i].checkIn,rows[i].wake,now).text;
+    });
+    var overlap=describeStayOverlap(rows);
+    $('overlap').hidden=!overlap;
+    $('overlap').textContent=overlap||'';
+  }
+  function paintRow(row){
+    var id=++rowSeq;
+    var el=document.createElement('div');
+    el.className='stay';
+    el.innerHTML=
+      '<label for="stay-name-'+id+'">Guest or family name</label>'+
+      '<input id="stay-name-'+id+'" class="stay-name" maxlength="100" autocomplete="off">'+
+      '<label for="stay-in-'+id+'">Check-in</label>'+
+      '<input id="stay-in-'+id+'" class="stay-in" type="date">'+
+      '<label for="stay-out-'+id+'">Check-out</label>'+
+      '<input id="stay-out-'+id+'" class="stay-out" type="date">'+
+      '<label for="stay-wake-'+id+'">Turn-on time</label>'+
+      '<input id="stay-wake-'+id+'" class="stay-wake" type="time" step="60">'+
+      '<p class="note stay-note" aria-live="polite"></p>'+
+      '<button class="secondary stay-remove" type="button">Remove</button>';
+    el.querySelector('.stay-name').value=row.name||'';
+    el.querySelector('.stay-in').value=row.checkIn||'';
+    el.querySelector('.stay-out').value=row.checkOut||'';
+    el.querySelector('.stay-wake').value=row.wake||'';
+    el.addEventListener('input',function(){rememberStays(readRows());refreshNotes();});
+    el.addEventListener('change',function(){rememberStays(readRows());refreshNotes();});
+    el.querySelector('.stay-remove').addEventListener('click',function(){
+      var rows=readRows().filter(function(_,i){return $('stays').children[i]!==el;});
+      if(!rows.length)rows=[blankRow()];
+      rememberStays(rows);
+      renderStays(rows);
+    });
+    return el;
+  }
+  function renderStays(rows){
+    var host=$('stays');
+    host.innerHTML='';
+    rows.forEach(function(row){host.appendChild(paintRow(row));});
+    refreshNotes();
+  }
+  renderStays(loadStays());
   fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(c){
-    var time=checkInWakeTime(c&&c.houseRules&&c.houseRules.checkInTime);
-    if(time&&!$('wakeTime').value)$('wakeTime').value=time;
-    renderWake();
+    houseTime=checkInWakeTime(c&&c.houseRules&&c.houseRules.checkInTime)||'';
+    var rows=readRows();
+    if(houseTime&&rows.length===1&&!rows[0].name&&!rows[0].checkIn&&!rows[0].checkOut&&!rows[0].wake){
+      rows[0].wake=houseTime;
+      renderStays(rows);
+    }
   }).catch(function(){});
+  $('add').addEventListener('click',function(){
+    var rows=readRows();
+    rows.push(blankRow());
+    rememberStays(rows);
+    renderStays(rows);
+  });
 
   function show(el,msg){
     $('alert').hidden=true;$('ok').hidden=true;
     el.hidden=!msg;
     el.textContent=msg||'';
   }
-  function stayUrl(name,checkIn,checkOut){
-    var wake=$('autoOn').checked?$('wakeTime').value:'off';
-    var payload=name?{n:name,in:checkIn,out:checkOut,wake:wake}:{clear:true,wake:'off'};
-    return APPLY+'?setStay='+encodeStayPayload(payload);
+  function filledRows(){
+    return readRows().filter(function(row){return row.name||row.checkIn||row.checkOut;});
+  }
+  function stayUrl(){
+    return APPLY+'?setStay='+encodeStayPayload(stayListPayload(filledRows()));
+  }
+  function clearUrl(){
+    return APPLY+'?setStay='+encodeStayPayload({clear:true,wake:'off'});
   }
   function commandUrl(cmd, extra){
     var host=($('host').value||DEFAULT_HOST).replace(/\/$/,'');
@@ -187,42 +247,52 @@
     show($('ok'),'Waking the TV… The picture opens in about 10 seconds.');
     $('preview').disabled=true;
   }
-  function send(name,checkIn,checkOut){
+  function sendList(){
     if(!requirePassword())return;
     offerSavedPassword();
-    if(!sendStayThenPicture(fullyStep,later,clock,stayUrl(name,checkIn,checkOut))){
+    if(!sendStayThenPicture(fullyStep,later,clock,stayUrl())){
       show($('alert'),'Allow pop-ups for this page, then try again.');
       return;
     }
     show($('ok'),'Waking the TV… The stay goes on once it is awake, then the TV picture opens in about 12 seconds.');
   }
+  function sendClear(){
+    if(!requirePassword())return false;
+    offerSavedPassword();
+    if(!sendStayThenPicture(fullyStep,later,clock,clearUrl())){
+      show($('alert'),'Allow pop-ups for this page, then try again.');
+      return false;
+    }
+    show($('ok'),'Waking the TV… The stay goes on once it is awake, then the TV picture opens in about 12 seconds.');
+    return true;
+  }
 
   $('form').addEventListener('submit',function(e){
     e.preventDefault();
-    var name=$('name').value.trim();
-    var checkIn=$('checkIn').value;
-    var checkOut=$('checkOut').value;
-    if(!name||!checkIn||!checkOut){
+    var rows=filledRows();
+    if(!rows.length){
       show($('alert'),'Enter a guest name and both dates.');
       return;
     }
-    if(checkIn>checkOut){
-      show($('alert'),'Check-out needs to be on or after check-in.');
-      return;
+    for(var i=0;i<rows.length;i++){
+      if(!rows[i].name||!rows[i].checkIn||!rows[i].checkOut){
+        show($('alert'),'Enter a guest name and both dates.');
+        return;
+      }
+      if(rows[i].checkIn>rows[i].checkOut){
+        show($('alert'),'Check-out needs to be on or after check-in.');
+        return;
+      }
     }
-    var wake=wakeState();
-    if(wake.state==='incomplete'){
-      show($('alert'),wake.text);
-      return;
-    }
-    send(name,checkIn,checkOut);
+    rememberStays(rows);
+    sendList();
   });
   $('preview').addEventListener('click',showTheTv);
   $('clear').addEventListener('click',function(){
     if(!confirm('Show the generic welcome on the TV?'))return;
-    $('checkIn').required=false;
-    $('checkOut').required=false;
-    send('','','');
+    if(!sendClear())return;
+    rememberStays([blankRow()]);
+    renderStays([blankRow()]);
   });
 })();
 </script>
