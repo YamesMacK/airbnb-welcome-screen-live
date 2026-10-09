@@ -108,10 +108,13 @@
     if(!password)return;
     remember({host:host,password:password});
   }
+  var reloadOnPassword=false;
   function restorePassword(){
     var stored=load();
     var field=$('password');
-    if(stored.password&&field&&!field.value)field.value=stored.password;
+    var wasEmpty=field&&!field.value;
+    if(stored.password&&wasEmpty)field.value=stored.password;
+    if(reloadOnPassword&&wasEmpty&&field&&field.value)loadStayList(0);
   }
   var stored=load();
   if(stored.host && stored.host.replace(/\/$/,'')!=='http://shield:2323') $('host').value=stored.host;
@@ -130,7 +133,10 @@
   function rememberRemote(){
     saveRemote(($('host').value||DEFAULT_HOST).replace(/\/$/,''),$('password').value);
   }
-  $('password').addEventListener('input',rememberRemote);
+  $('password').addEventListener('input',function(){
+    rememberRemote();
+    if($('password').value)loadStayList(0);
+  });
   $('host').addEventListener('change',rememberRemote);
 
   var STAYS_URL='https://home-mini.tail240fad.ts.net/ssh-stays';
@@ -139,6 +145,7 @@
   var sequence={busy:false};
   var staysReady=false;
   var edited=false;
+  var stayLoading=false;
   function blankRow(){return {name:'',checkIn:'',checkOut:'',wake:''};}
   function sameStay(a,b){
     return a.name===b.name&&a.checkIn===b.checkIn&&a.checkOut===b.checkOut&&a.wake===b.wake;
@@ -228,7 +235,8 @@
     rows=rows.map(publicStay);
     if(edited){
       readRows().forEach(function(row){
-        if(!(row.name||row.checkIn||row.checkOut||row.wake))return;
+        var empty=!(row.name||row.checkIn||row.checkOut||row.wake);
+        if(empty){rows.push(row);return;}
         if(!rows.some(function(server){return sameStay(server,row);}))rows.push(row);
       });
     }
@@ -243,8 +251,15 @@
     show($('alert'),'');
   }
   function readStayList(){
-    return fetch(STAYS_URL,{cache:'no-store',targetAddressSpace:'local'}).then(function(r){
+    var password=$('password').value;
+    if(!password)return Promise.reject(new Error('password'));
+    return fetch(STAYS_URL,{
+      cache:'no-store',
+      targetAddressSpace:'local',
+      headers:{'X-Fully-Password':password}
+    }).then(function(r){
       return r.json().catch(function(){return null;}).then(function(data){
+        if(r.status===401)throw new Error('password');
         if(data&&data.error==='unreadable')throw new Error('unreadable');
         if(!r.ok)throw new Error('status');
         if(!data||!Array.isArray(data.stays))throw new Error('unreadable');
@@ -254,21 +269,37 @@
   }
   var houseReady=fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return {};});
   function loadStayList(attempt){
+    if(staysReady||stayLoading)return;
+    if(!$('password').value){
+      staysReady=false;
+      if(!attempt&&!edited)renderStays([]);
+      setActionsDisabled(sequence.busy);
+      show($('alert'),'The password is needed to load the list.');
+      return;
+    }
+    stayLoading=true;
     readStayList().then(function(rows){
+      stayLoading=false;
       return houseReady.then(function(config){
         if(staysReady)return;
         houseTime=checkInWakeTime(config&&config.houseRules&&config.houseRules.checkInTime)||'';
         applyLoaded(rows);
         show($('alert'),'');
       });
-    }).catch(function(){
+    }).catch(function(err){
+      stayLoading=false;
       if(staysReady)return;
       staysReady=false;
       if(!attempt&&!edited)renderStays([]);
       setActionsDisabled(sequence.busy);
+      if(err&&err.message==='password'){
+        show($('alert'),'The password is needed to load the list.');
+        return;
+      }
       if(attempt<90)setTimeout(function(){loadStayList(attempt+1);},1000);
     });
   }
+  reloadOnPassword=true;
   loadStayList(0);
   function filledRows(){
     return readRows().filter(function(row){return row.name||row.checkIn||row.checkOut;});
