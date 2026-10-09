@@ -5,7 +5,7 @@
 // Bump RELEASE when changing this list. Successful network responses always win.
 // A ?v=<digits> request is the stay script the page asked for. It is cached
 // under that exact URL. Any other query, including a guest update, is not stored.
-const RELEASE = '2026-10-01-2';
+const RELEASE = '2026-10-09-1';
 const FILES = [
   'index.html', 'apply.html', 'stay.html', 'update.html', 'favicon.ico',
   'assets/apply-stay.js', 'assets/favicon.svg', 'assets/qrcode.min.js',

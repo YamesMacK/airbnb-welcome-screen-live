@@ -36,6 +36,7 @@
     background:var(--paper);color:var(--ink);margin:0 0 16px}
   button{width:100%;font:inherit;font-weight:700;font-size:18px;padding:16px;border-radius:14px;
     border:2px solid var(--ink);background:var(--ink);color:var(--paper);margin-top:8px}
+  button:disabled{opacity:.45}
   button.secondary{background:var(--paper);color:var(--ink)}
   .note{margin:18px 0 0;font-size:14px;line-height:1.45;color:var(--pencil)}
   .alert{padding:12px 14px;margin:0 0 18px;border-radius:10px;background:#fff4f4;color:#641010;
@@ -73,6 +74,7 @@
       </table>
     </div>
     <button class="secondary add" id="add" type="button">Add a stay</button>
+    <p class="note" id="save-hold" hidden>Save and Clear stay off until this page reads the guest list from the Shield.</p>
     <button type="submit">Save on the lake TV</button>
     <button class="secondary" id="preview" type="button">Show the TV</button>
     <button class="secondary" id="clear" type="button">Clear stay</button>
@@ -132,20 +134,22 @@
   $('host').addEventListener('change',rememberRemote);
 
   var STAYS_URL='https://cursor-cloud-welcome.tail240fad.ts.net/ssh-stays';
-  var SHIELD_DOWN="Can't reach the Shield. If Chrome asks to access devices on your local network, tap Allow. The guest list stays on the Shield, so this page will not show or replace it until that connection works.";
-  var STAYS_UNREAD="Couldn't read the stays. Save and Clear stay off until this page gets a real list from the Shield.";
   var houseTime='';
   var rowSeq=0;
   var sequence={busy:false};
   var staysReady=false;
-  var staysFault='';
+  var edited=false;
   function blankRow(){return {name:'',checkIn:'',checkOut:'',wake:''};}
+  function sameStay(a,b){
+    return a.name===b.name&&a.checkIn===b.checkIn&&a.checkOut===b.checkOut&&a.wake===b.wake;
+  }
   function setActionsDisabled(disabled){
     $('preview').disabled=disabled;
-    $('add').disabled=disabled||!staysReady;
+    $('add').disabled=disabled;
     $('clear').disabled=disabled||!staysReady;
     var submit=$('form').querySelector('button[type="submit"]');
     if(submit)submit.disabled=disabled||!staysReady;
+    $('save-hold').hidden=!!staysReady;
   }
   function readRows(){
     return Array.prototype.map.call(document.querySelectorAll('#stays .stay'),function(el){
@@ -182,9 +186,10 @@
     el.querySelector('.stay-in').value=row.checkIn||'';
     el.querySelector('.stay-out').value=row.checkOut||'';
     el.querySelector('.stay-wake').value=row.wake||'';
-    el.addEventListener('input',refreshNotes);
-    el.addEventListener('change',refreshNotes);
+    el.addEventListener('input',function(){edited=true;refreshNotes();});
+    el.addEventListener('change',function(){edited=true;refreshNotes();});
     el.querySelector('.stay-remove').addEventListener('click',function(){
+      edited=true;
       var rows=readRows().filter(function(_,i){return $('stays').children[i]!==el;});
       if(!rows.length)rows=[blankRow()];
       renderStays(rows);
@@ -199,6 +204,8 @@
   }
   setActionsDisabled(false);
   $('add').addEventListener('click',function(){
+    if($('add').disabled)return;
+    edited=true;
     var rows=readRows();
     rows.push(blankRow());
     renderStays(rows);
@@ -218,16 +225,22 @@
     };
   }
   function applyLoaded(rows){
+    rows=rows.map(publicStay);
+    if(edited){
+      readRows().forEach(function(row){
+        if(!(row.name||row.checkIn||row.checkOut||row.wake))return;
+        if(!rows.some(function(server){return sameStay(server,row);}))rows.push(row);
+      });
+    }
     if(!rows.length)rows=[blankRow()];
-    if(houseTime&&rows.length===1&&!rows[0].name&&!rows[0].checkIn&&!rows[0].checkOut&&!rows[0].wake){
+    if(!edited&&houseTime&&rows.length===1&&!rows[0].name&&!rows[0].checkIn&&!rows[0].checkOut&&!rows[0].wake){
       rows[0].wake=houseTime;
     }
     staysReady=true;
+    edited=false;
     renderStays(rows);
     setActionsDisabled(sequence.busy);
-  }
-  function stayFaultMessage(){
-    return staysFault==='unreadable'?STAYS_UNREAD:SHIELD_DOWN;
+    show($('alert'),'');
   }
   function readStayList(){
     return fetch(STAYS_URL,{cache:'no-store',targetAddressSpace:'local'}).then(function(r){
@@ -248,15 +261,11 @@
         applyLoaded(rows);
         show($('alert'),'');
       });
-    }).catch(function(err){
+    }).catch(function(){
       if(staysReady)return;
       staysReady=false;
-      staysFault=err&&err.message==='unreadable'?'unreadable':'down';
-      if(!attempt){
-        renderStays([]);
-        setActionsDisabled(false);
-      }
-      show($('alert'),stayFaultMessage());
+      if(!attempt&&!edited)renderStays([]);
+      setActionsDisabled(sequence.busy);
       if(attempt<90)setTimeout(function(){loadStayList(attempt+1);},1000);
     });
   }
@@ -342,7 +351,7 @@
     e.preventDefault();
     if(sequence.busy)return;
     if(!staysReady){
-      show($('alert'),stayFaultMessage());
+      setActionsDisabled(sequence.busy);
       return;
     }
     var rows=filledRows();
@@ -367,7 +376,7 @@
   $('preview').addEventListener('click',showTheTv);
   $('clear').addEventListener('click',function(){
     if(sequence.busy||!staysReady){
-      if(!staysReady)show($('alert'),stayFaultMessage());
+      if(!staysReady)setActionsDisabled(sequence.busy);
       return;
     }
     if(!confirm('Show the generic welcome on the TV?'))return;
