@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Optional lock capability diagnostic</title>
+<style>body{font:20px system-ui;max-width:54rem;margin:3rem auto;padding:1rem;background:#142225;color:#f4f2ea}button{font:inherit;padding:.7rem 1rem}pre{white-space:pre-wrap;line-height:1.5}</style>
+<h1>Optional lock capability diagnostic</h1>
+<p>Use two same-origin diagnostic pages during an authorized empty-house check. Run in one page and keep the other open. Record the Fully and WebView versions separately. This diagnostic does not change device settings or bookings.</p>
+<button id="run">Run two-context check</button>
+<pre id="result" aria-live="polite"></pre>
+<script>
+(function () {
+  'use strict';
+  const output=document.getElementById('result'),button=document.getElementById('run');
+  const log=text=>{output.textContent+=text+'\n';};
+  if(!navigator.locks||typeof navigator.locks.request!=='function'||typeof BroadcastChannel==='undefined'){
+    log('Unavailable: Web Locks or BroadcastChannel is missing. This does not block the default single-document writer.');button.disabled=true;return;
+  }
+  const channel=new BroadcastChannel('ssh-capability-probe-v1'),id=String(performance.now())+':'+Math.random();
+  let busy=false,held=false,peers=new Set(),run=null;
+  const send=message=>channel.postMessage({sender:id,...message});
+  channel.onmessage=async event=>{
+    const message=event.data;if(!message||message.sender===id)return;
+    if(message.type==='hello'){send({type:'hello-reply'});return;}
+    if(message.type==='hello-reply'){peers.add(message.sender);log('Second diagnostic context observed.');return;}
+    if(message.type==='holding'&&!busy){
+      busy=true;const token=message.token,controller=new AbortController();let entered=false;
+      const timer=setTimeout(()=>controller.abort(),100);
+      try{await navigator.locks.request('ssh-capability-probe-v1',{signal:controller.signal},()=>{entered=true;});send({type:'abort-result',token,passed:false});}
+      catch(error){send({type:'abort-result',token,passed:error.name==='AbortError'&&!entered});}finally{clearTimeout(timer);}
+      await navigator.locks.request('ssh-capability-probe-v1',()=>{send({type:'peer-entered',token});log('Acquired diagnostic lock after the holder released it.');});busy=false;
+    }
+    if(message.token===run&&message.type==='abort-result')log(message.passed?'Queued abort observed.':'FAILED: queued request did not abort cleanly.');
+    if(message.token===run&&message.type==='peer-entered')log(held?'FAILED: overlapping lock holders.':'Two-context exclusion observed.');
+  };
+  send({type:'hello'});
+  button.addEventListener('click',async()=>{
+    if(busy)return;busy=true;button.disabled=true;run=id+':'+performance.now();
+    try{await navigator.locks.request('ssh-capability-probe-v1',async()=>{held=true;send({type:'holding',token:run});log('Holding diagnostic lock for 1.5 seconds.');await new Promise(resolve=>setTimeout(resolve,1500));held=false;});
+      if(peers.size===0)log('Two-context check unavailable unless a second diagnostic context reports observations.');
+    }catch(error){held=false;log('Unavailable: '+error.name);}finally{busy=false;button.disabled=false;}
+  });
+  log('APIs available. Waiting for a second diagnostic context; no capability approval is implied.');
+})();
+</script>
+</html>

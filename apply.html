@@ -1,29 +1,12 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="Cache-Control" content="no-store">
-<title>Updating stay</title>
-</head>
-<body>
-<script src="assets/apply-stay.js?v=10"></script>
+<html lang="en"><head><meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-store"><title>Open welcome screen</title></head>
+<body><p id="result">Opening the welcome screen. This page does not save changes.</p><a href="index.html">Home</a>
 <script>
 (function(){
-  var KEY='ssh-device-config-v1';
-  var raw=null;
-  try{raw=localStorage.getItem(KEY);}catch(e){}
-  var result=typeof applyStayFromQuery==='function'
-    ? applyStayFromQuery(location.search,raw,location.hash)
-    : {applied:false};
-  if(result.applied){
-    try{localStorage.setItem(KEY,result.next);}catch(e){}
-  }
-  try{
-    recordStayWake(localStorage,result);
-    if(typeof syncTvWake==='function')syncTvWake(window.fully,localStorage,new Date());
-  }catch(e){}
-  location.replace('index.html');
+  var all=location.search+'&'+location.hash;
+  if(/(?:^|[?&#])(?:setStay|guest|name|checkIn|checkOut|n|in|out|clear|stays|wake)(?:=|&|$)/i.test(all)){document.getElementById('result').textContent='This stay link is obsolete. Open the current booking editor.';return;}
+  var input=new URLSearchParams(location.search),output=new URLSearchParams();
+  ['op','ack','owner'].forEach(function(key){var value=input.get(key);if(value&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value))output.set(key,value);});
+  location.replace('index.html'+(output.toString()?'?'+output:''));
 })();
-</script>
-</body>
-</html>
+</script></body></html>

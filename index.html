@@ -444,6 +444,7 @@
 
 <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="systemStatus" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+<div id="deviceActions" hidden style="position:fixed;bottom:55px;right:20px;z-index:60"><button id="deviceRetry" type="button">Retry</button> <a href="index.html">Home</a></div>
 
 <main class="setup" id="setup" hidden aria-labelledby="setupTitle">
   <div class="setup-card">
@@ -454,7 +455,7 @@
       <fieldset>
         <legend>Current stay</legend>
         <div class="setup-grid">
-          <div class="setup-field wide"><label for="setupGuestName">Guest or family name</label><input id="setupGuestName" name="guestName" autocomplete="off" maxlength="100"></div>
+          <div class="setup-field wide"><label for="setupGuestName">Guest or family name</label><input id="setupGuestName" name="guestName" autocomplete="off" maxlength="120"></div>
           <div class="setup-field"><label for="setupCheckIn">Check-in date</label><input id="setupCheckIn" name="checkIn" type="date"></div>
           <div class="setup-field"><label for="setupCheckOut">Check-out date</label><input id="setupCheckOut" name="checkOut" type="date"></div>
         </div>
@@ -471,12 +472,13 @@
       <fieldset>
         <legend>Address</legend>
         <div class="setup-grid">
-          <div class="setup-field wide"><label for="setupAddress">Street address</label><input id="setupAddress" name="address" autocomplete="street-address" maxlength="240"></div>
+          <div class="setup-field wide"><label for="setupAddress">Street address</label><input id="setupAddress" name="address" autocomplete="street-address" maxlength="500"></div>
         </div>
       </fieldset>
       <div class="setup-actions">
         <button type="submit">Save on this device</button>
-        <button class="secondary" id="setupCancel" type="button">Cancel</button>
+        <button class="secondary" id="setupCancel" type="button">Home</button>
+        <button class="secondary" id="setupRetry" type="button" hidden>Retry last attempt</button>
         <button class="danger" id="setupClear" type="button">Clear device data</button>
       </div>
       <div class="setup-actions" id="setupConfirm" hidden>
@@ -489,7 +491,8 @@
 </main>
 
 <script src="assets/qrcode.min.js"></script>
-<script src="assets/apply-stay.js?v=10"></script>
+<script src="assets/device-state.js?v=12"></script>
+<script src="assets/apply-stay.js?v=12"></script>
 <script>
 (function(){
   "use strict";
@@ -507,54 +510,41 @@
   var SHARED_CONFIG_KEY='ssh-shared-config-v1:'+new URL('.',location.href).pathname;
   var setupMode=new URLSearchParams(location.search).has('setup');
   var idleFocus=null;
-  /* Fully repeats a wake every week, so re-check it whenever this page runs:
-     on load, when the screen comes back, and each minute while it is showing. */
-  function syncWake(){
-    var result=null;
-    try{
-      if(typeof reconcileDeviceStay==='function')result=reconcileDeviceStay(localStorage,window.fully,new Date());
-      else if(typeof syncTvWake==='function')syncTvWake(window.fully,localStorage,new Date());
-    }catch(e){}
-    return paintReconciledGuest(result);
+  var deviceIO=SSHDeviceState.createBrowserIO({fully:window.fully,baseUrl:new URL('.',location.href).href});
+  var deviceCycle=null,setupBaseline=null,setupCommand=null;
+  var ownerHint=new URLSearchParams(location.search).get('owner');
+  var obsoleteLink=obsoleteStayLink(location.search,location.hash);
+  function transactionMessage(result){
+    var messages={committed:'Stay saved on this device.',conflict:'The device changed since this form opened. Reload and review the current details.',expired:'This attempt expired before it was applied. Review the current details.', 'not-applied':'Known not applied. Retry the same attempt.', 'storage-error':'Storage error. The change was not saved. Retry.',unconfirmed:'Persistence is unconfirmed. Retry this exact attempt.', 'read-only':'Device editing is unavailable until owner verification.',invalid:'This request is invalid and was not applied.'};
+    return messages[result&&result.outcome]||'Waiting for the device to confirm the change.';
   }
   function paintReconciledGuest(result){
-    if(!cfg||!result||!result.guestChanged||!result.guest)return false;
-    cfg.guest={name:result.guest.name||'',checkIn:result.guest.checkIn||'',checkOut:result.guest.checkOut||''};
-    applyConfig(cfg,[]);
-    return true;
+    if(!cfg||!result||!result.effectiveGuest)return false;
+    var changed=JSON.stringify(cfg.guest)!==JSON.stringify(result.effectiveGuest);
+    if(changed){cfg.guest=result.effectiveGuest;applyConfig(cfg,[]);}
+    setSystemStatus('storage',result.persistenceStatus==='error'||result.persistenceStatus==='unconfirmed'?'Device details could not be saved. Please contact the host.':'');
+    return changed;
   }
-  function followWake(checkIn){
-    try{if(typeof followStayWake==='function')followStayWake(localStorage,checkIn);}catch(e){}
-    syncWake();
+  function syncWake(){
+    if(deviceCycle)return deviceCycle;
+    deviceCycle=(async function(){
+      if(obsoleteLink){setSystemStatus('transaction','This stay link is obsolete. Open the current booking editor.');return false;}
+      if(ownerHint)await processOwnerMailbox(deviceIO,ownerHint);
+      var mailbox=await processDeviceMailboxes(deviceIO);
+      if(mailbox.outcome&&mailbox.outcome!=='idle')setSystemStatus('transaction',transactionMessage(mailbox));
+      if(['storage-error','unconfirmed','invalid','read-only','not-applied'].includes(mailbox.outcome))return false;
+      var result=await reconcileDeviceStay(deviceIO);
+      setSystemStatus('publication',mailbox.publicationStatus==='error'||result.revision&&result.persistenceStatus==='committed'&&result.publicationStatus.state==='error'?'The device status could not be confirmed remotely. Retrying automatically.':'');
+      setSystemStatus('wake',result.wakeStatus&&result.wakeStatus.state==='deferred'?'TV auto-on is deferred. The welcome page must run within six days of arrival to set the schedule.':result.wakeStatus&&result.wakeStatus.state==='error'?'TV auto-on could not be verified. Please contact the host.':'');
+      return paintReconciledGuest(result);
+    })().catch(function(){setSystemStatus('storage','Device details are unavailable. Please contact the host.');return false;}).finally(function(){deviceCycle=null;});
+    return deviceCycle;
   }
-  syncWake();
   document.addEventListener('visibilitychange',function(){if(!document.hidden)syncWake();});
   window.addEventListener('pageshow',syncWake);
-  setInterval(syncWake,60*1000);
-  (function consumeSetStay(){
-    var done=false;
-    function run(){
-      if(done||typeof applyStayFromQuery!=='function')return;
-      var raw=null;
-      try{raw=localStorage.getItem(DEVICE_CONFIG_KEY);}catch(e){return;}
-      var result=applyStayFromQuery(location.search,raw,location.hash);
-      if(!result.applied)return;
-      done=true;
-      try{localStorage.setItem(DEVICE_CONFIG_KEY,result.next);}catch(e){return;}
-      try{recordStayWake(localStorage,result);}catch(e){}
-      syncWake();
-      if(window.fully&&typeof window.fully.loadStartURL==='function'){
-        try{window.fully.loadStartURL();return;}catch(e){}
-      }
-      location.replace(location.pathname);
-    }
-    run();
-    window.addEventListener('hashchange',run);
-    window.addEventListener('pageshow',run);
-    setTimeout(run,0);
-    setTimeout(run,300);
-    setTimeout(run,1000);
-  })();
+  document.getElementById('deviceRetry').addEventListener('click',syncWake);
+  window.addEventListener('hashchange',function(){obsoleteLink=obsoleteStayLink(location.search,location.hash);syncWake();});
+  setInterval(function(){if(!document.hidden)syncWake();},2000);
 
   /* Complete public guide, available before any network request. Refresh this
      snapshot with sync-public-guide.cjs when config.json changes. Private guest,
@@ -1035,9 +1025,9 @@
       if(e.key===DEVICE_CONFIG_KEY&&!setupMode)loadConfiguration();
     });
     document.addEventListener('visibilitychange',function(){
-      if(!document.hidden&&cfg&&!refreshExpiredGuest())loadWeather(cfg.location);
+      if(!document.hidden&&cfg)refreshExpiredGuest().then(function(changed){if(!changed)loadWeather(cfg.location);});
     });
-    setInterval(function(){if(cfg&&!refreshExpiredGuest())loadWeather(cfg.location);},60*60*1000);
+    setInterval(function(){if(cfg)refreshExpiredGuest().then(function(changed){if(!changed)loadWeather(cfg.location);});},60*60*1000);
     wireModal();
     window.addEventListener('online',loadConfiguration);
     if('serviceWorker' in navigator){
@@ -1265,6 +1255,7 @@
     var messages=Object.keys(statusMessages).map(function(k){return statusMessages[k];});
     el.textContent=messages.join(' ');
     el.hidden=!messages.length;
+    document.getElementById('deviceActions').hidden=!statusMessages.transaction&&!statusMessages.storage;
   }
 
   function fetchJson(url,timeoutMs){
@@ -1289,39 +1280,21 @@
     });
   }
 
-  function deviceSubset(raw){
-    if(typeof deviceRecord==='function')return deviceRecord(raw);
-    if(!isObj(raw))return null;
-    var guest=isObj(raw.guest)?raw.guest:{};
-    var wifi=isObj(raw.wifi)?raw.wifi:{};
-    var safety=isObj(raw.safety)?raw.safety:{};
-    return {
-      guest:{name:guest.name,checkIn:guest.checkIn,checkOut:guest.checkOut},
-      wifi:{ssid:wifi.ssid,password:wifi.password,encryption:wifi.encryption},
-      safety:{address:safety.address,hostName:safety.hostName,hostPhone:safety.hostPhone}
-    };
-  }
-
+  // Read-only compatibility projection. Legacy data is never implicitly enrolled.
   function readDeviceConfig(){
     try{
-      var stored=localStorage.getItem(DEVICE_CONFIG_KEY);
-      if(stored==null)return {config:null,error:''};
-      var parsed=JSON.parse(stored);
-      var subset=deviceSubset(parsed);
-      if(!subset)return {config:null,error:'Device-only details were malformed and were safely ignored.'};
-      return {config:subset,error:''};
-    }catch(e){
-      return {config:null,error:'Device-only details could not be read from this browser. Showing the public fallback.'};
-    }
-  }
-
-  function writeDeviceConfig(value){
-    try{
-      localStorage.setItem(DEVICE_CONFIG_KEY,JSON.stringify(deviceSubset(value)));
-      return '';
-    }catch(e){
-      return 'This browser blocked local storage, so no private details were saved.';
-    }
+      var raw=localStorage.getItem(DEVICE_CONFIG_KEY);
+      if(raw===null)return {config:null,error:''};
+      var parsed=JSON.parse(raw),record;
+      if(SSHDeviceState.validateRecord(parsed).ok)record=parsed;
+      else {
+        var adapted=SSHDeviceState.adaptLegacyRecord({rawDeviceConfig:raw,rawLegacyWake:localStorage.getItem('ssh-tv-wake-v1'),nowMs:Date.now(),deviceEpoch:'11111111-1111-4111-8111-111111111111',revision:'22222222-2222-4222-8222-222222222222'});
+        if(!adapted.ok)throw new Error('Invalid device details');
+        record=adapted.record;
+      }
+      var view=SSHDeviceState.reduceReconciliation(record,{now:Date.now(),nextRevision:record.revision});
+      return {config:{guest:view.effectiveGuest,wifi:record.wifi,safety:record.safety},record:parsed,error:''};
+    }catch(e){return {config:null,error:'Device-only details could not be read. Showing the public guide.'};}
   }
 
   function applyConfig(c,issues,guestNotice){
@@ -1421,6 +1394,8 @@
     if(screen){screen.inert=true;screen.setAttribute('aria-hidden','true');}
     document.getElementById('setupOrigin').textContent=location.origin;
     var stored=readDeviceConfig();
+    setupBaseline=stored.record&&SSHDeviceState.validateRecord(stored.record).ok?JSON.parse(JSON.stringify(stored.record)):null;
+    if(!setupBaseline||!deviceIO.checkAuthority(setupBaseline))showSetupAlert('Device editing is unavailable until owner verification.',false);
     var local=stored.config||{};
     var guest=isObj(local.guest)?local.guest:{};
     var wifi=isObj(local.wifi)?local.wifi:{};
@@ -1436,6 +1411,7 @@
     if(stored.error)showSetupAlert(stored.error,false);
     document.getElementById('setupEncryption').addEventListener('change',syncSetupPassword);
     document.getElementById('setupCancel').addEventListener('click',leaveSetup);
+    document.getElementById('setupRetry').addEventListener('click',function(){if(setupCommand)submitSetupCommand(setupCommand.kind,setupCommand.payload);});
     document.getElementById('setupForm').addEventListener('submit',saveSetup);
     document.getElementById('setupClear').addEventListener('click',function(){
       document.getElementById('setupConfirm').hidden=false;
@@ -1445,14 +1421,7 @@
       document.getElementById('setupConfirm').hidden=true;
       document.getElementById('setupClear').focus();
     });
-    document.getElementById('setupClearConfirm').addEventListener('click',function(){
-      try{localStorage.removeItem(DEVICE_CONFIG_KEY);}catch(e){
-        showSetupAlert('This browser blocked access to local storage, so device data could not be cleared.');
-        return;
-      }
-      followWake('');
-      leaveSetup();
-    });
+    document.getElementById('setupClearConfirm').addEventListener('click',function(){submitSetupCommand('clear-device',{});});
     document.getElementById('setupGuestName').focus();
   }
 
@@ -1482,33 +1451,40 @@
     if(!ssid&&password){showSetupAlert('Enter the Wi-Fi network name, or clear its password.');return;}
     if(ssid&&encryption!=='nopass'&&!password){showSetupAlert('Enter the secured Wi-Fi password, or choose Open network.');return;}
     if(encryption==='nopass')password='';
-    var existing=readDeviceConfig().config||{};
-    var edited=typeof editDisplayedStay==='function'
-      ? editDisplayedStay(existing,hasStay?{name:guestName,checkIn:checkIn,checkOut:checkOut}:{name:'',checkIn:'',checkOut:''},new Date())
-      : null;
-    var value={
-      guest:edited&&edited.guest?edited.guest:{name:guestName,checkIn:checkIn,checkOut:checkOut},
-      wifi:{ssid:ssid,password:password,encryption:encryption},
-      safety:{
-        address:document.getElementById('setupAddress').value.trim(),
-        hostName:'',
-        hostPhone:''
-      }
-    };
-    if(edited&&Array.isArray(edited.stays))value.stays=edited.stays;
-    var error=writeDeviceConfig(value);
-    if(error){showSetupAlert(error);return;}
-    if(edited&&edited.wake){
-      try{saveTvWake(localStorage,edited.wake);}catch(e){}
-      syncWake();
-    }else followWake(hasStay?checkIn:'');
-    leaveSetup();
+    if(!setupBaseline){showSetupAlert('Device editing is unavailable until owner verification.');return;}
+    var index=setupBaseline.displaySelection;
+    // Active projection can differ from an explicit future selection; edit the displayed baseline row.
+    var displayed=setupBaseline.guest;
+    var found=setupBaseline.stays.findIndex(function(row){return row.name===displayed.name&&row.checkIn===displayed.checkIn&&row.checkOut===displayed.checkOut;});
+    if(found>=0)index=found;
+    var previous=index===null?null:setupBaseline.stays[index];
+    var value={wifi:{ssid:ssid,password:password,encryption:encryption},
+      safety:{address:document.getElementById('setupAddress').value.trim(),hostName:setupBaseline.safety.hostName,hostPhone:setupBaseline.safety.hostPhone},
+      stayEdit:{index:index,stay:hasStay?{name:guestName,checkIn:checkIn,checkOut:checkOut,wake:previous?previous.wake:''}:null}};
+    submitSetupCommand('setup',value);
+  }
+  async function submitSetupCommand(kind,payload){
+    if(!setupBaseline||obsoleteLink){showSetupAlert('Device editing is unavailable until owner verification.');return;}
+    // A retry preserves the assigned operation and exact content after an uncertain write.
+    if(!setupCommand)setupCommand={protocol:2,operationId:crypto.randomUUID(),deviceEpoch:setupBaseline.deviceEpoch,expectedRevision:setupBaseline.revision,expiresAt:Date.now()+120000,kind:kind,payload:payload};
+    showSetupAlert('Pending: waiting for durable device storage.',false);
+    var result=await SSHDeviceState.commitDeviceChange(setupCommand,deviceIO);
+    showSetupAlert(transactionMessage(result));
+    document.getElementById('setupRetry').hidden=!['storage-error','unconfirmed','not-applied'].includes(result.outcome);
+    if(result.outcome==='committed'){
+      setupCommand=null;
+      setupBaseline=deviceIO.readRecord();
+      await syncWake();
+      document.getElementById('setupConfirm').hidden=true;
+      showSetupAlert('Device details saved. You can return Home.',false);
+    }else if(['conflict','expired','invalid'].includes(result.outcome))setupCommand=null;
   }
 
   var savedBase=readSharedConfig()||clone(SAFE_CONFIG);
   var savedDevice=readDeviceConfig().config;
   init(normalizeConfig(savedDevice?mergeConfig(savedBase,savedDevice):savedBase).config);
   loadConfiguration();
+  syncWake();
 
   function esc(s){
     return String(s==null?'':s).replace(/[&<>"]/g,function(c){

@@ -1,422 +1,158 @@
 <!doctype html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="utf-8">
 <meta http-equiv="Cache-Control" content="no-store">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SSH TV">
-<title>SSH TV</title>
+<title>SSH TV · Stays</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ground:#F5EAF6;--paper:#FFFDF8;--ink:#280F91;--coral:#FD3B35;--pencil:#4B4459;
-    --sans:'Inter',Avenir,'Segoe UI',Arial,sans-serif;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;min-height:100%;background:var(--ground);color:var(--ink);
-    font-family:var(--sans);-webkit-font-smoothing:antialiased}
-  body{padding:28px 20px 48px}
-  main{max-width:760px;margin:0 auto}
-  .table-wrap{overflow-x:auto;margin:0 0 8px}
-  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);
-    border:2px solid var(--ink);border-radius:14px}
-  th,td{padding:8px;text-align:left;vertical-align:top}
-  th{font-size:13px}
-  td input{margin:0;padding:10px 8px}
-  .stay-note{margin:6px 0 0}
-  button.stay-remove{width:auto;margin:0;padding:10px 12px;font-size:14px}
-  h1{font-family:var(--sans);font-weight:700;font-size:36px;line-height:1.1;margin:0 0 8px}
-  .lead{margin:0 0 24px;line-height:1.45;color:var(--pencil);font-size:16px}
-  label{display:block;font-weight:700;margin:0 0 6px}
-  input{width:100%;font:inherit;padding:14px 12px;border:2px solid var(--ink);border-radius:12px;
-    background:var(--paper);color:var(--ink);margin:0 0 16px}
-  button{width:100%;font:inherit;font-weight:700;font-size:18px;padding:16px;border-radius:14px;
-    border:2px solid var(--ink);background:var(--ink);color:var(--paper);margin-top:8px}
-  button:disabled{opacity:.45}
-  button.secondary{background:var(--paper);color:var(--ink)}
-  .note{margin:18px 0 0;font-size:14px;line-height:1.45;color:var(--pencil)}
-  .alert{padding:12px 14px;margin:0 0 18px;border-radius:10px;background:#fff4f4;color:#641010;
-    border:2px solid #8b1515}
-  .alert[hidden],.ok[hidden]{display:none}
-  .ok{padding:12px 14px;margin:0 0 18px;border-radius:10px;background:#eef8f0;color:#0A5E2E;
-    border:2px solid #0A5E2E}
-  details{margin-top:28px;color:var(--pencil);font-size:14px}
-  summary{cursor:pointer;font-weight:700}
-  .stay .note{margin:6px 0 0}
-  .stay button{margin-top:0}
-  button.add{margin-bottom:8px}
-</style>
-</head>
-<body>
-<main>
-  <h1>SSH TV</h1>
-  <p class="lead">Turn Tailscale on. This page reads the guest list from the Shield. One save sends the whole list. A blank TV on time does not turn the TV on.</p>
-  <p class="alert" id="alert" hidden></p>
-  <p class="alert" id="overlap" hidden></p>
-  <p class="ok" id="ok" hidden></p>
-  <form id="form" autocomplete="on">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Guest</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>TV on</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="stays"></tbody>
-      </table>
-    </div>
-    <button class="secondary add" id="add" type="button">Add a stay</button>
-    <p class="note" id="save-hold" hidden>Save and Clear stay off until this page reads the guest list from the Shield.</p>
-    <button type="submit">Save on the lake TV</button>
-    <button class="secondary" id="preview" type="button">Show the TV</button>
-    <button class="secondary" id="clear" type="button">Clear stay</button>
-    <details>
-      <summary>First-time setup (James)</summary>
-      <p class="note">This phone's browser keeps the Fully password. Shared Tailscale users need the full Shield address below, not shield:2323.</p>
-      <label for="host">Fully address</label>
-      <input id="host" name="username" value="http://shield.tail240fad.ts.net:2323" autocomplete="username">
-      <label for="password">Fully remote-admin password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password">
-    </details>
-  </form>
-  <p class="note">Save and Show the TV both wake the Shield and bring the welcome screen to the front first, so each takes about 10 seconds before the picture of the TV opens.</p>
+@font-face{font-family:Inter;src:url(assets/fonts/inter-latin.woff2) format('woff2');font-weight:100 900;font-display:swap}
+:root{--ground:#f5eaf6;--paper:#fffdf8;--ink:#280f91;--muted:#51495b;--line:#c7bcd7;--red:#8b2424;font-family:Inter,'Segoe UI',sans-serif;color:var(--ink);background:var(--ground)}
+*{box-sizing:border-box}body{margin:0;padding:30px 20px 60px}main{max-width:850px;margin:auto}h1{font-size:36px;letter-spacing:-1px;margin:0 0 10px}h2{font-size:20px;margin:0 0 14px}p{line-height:1.5}.lead,.note{color:var(--muted)}.lead{margin:0 0 24px}.note{font-size:13px;margin:8px 0}.credentials{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:20px}.credential-row{display:flex;align-items:end;gap:12px}.credential-row label{flex:1;margin:0}.credential-row button{width:auto;white-space:nowrap}label{display:block;font-size:13px;font-weight:650}input{display:block;width:100%;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid #8a7aaa;border-radius:8px;padding:12px;margin-top:7px}button{font:inherit;font-weight:650;min-height:46px;padding:12px 16px;background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:9px;cursor:pointer}button.secondary{color:var(--ink);background:var(--paper)}button.danger{color:var(--red);border-color:var(--red);background:transparent}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #fd766d;outline-offset:3px}[hidden]{display:none!important}#status{min-height:48px;border-left:4px solid var(--ink);padding:12px 14px;background:var(--paper);border-radius:0 8px 8px 0;margin:16px 0;overflow-wrap:anywhere}#status[data-phase=confirmed]{border-color:#267243}#status[data-phase=error],#status[data-phase=unconfirmed],#status[data-phase=read-only]{border-color:var(--red)}#error{color:var(--red);font-size:14px}#stays{display:grid;gap:10px}.stay{display:grid;grid-template-columns:minmax(125px,1.4fr) minmax(125px,1fr) minmax(125px,1fr) minmax(95px,.8fr) auto;align-items:start;gap:10px;padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:12px}.stay input{font-size:14px;padding:10px 7px}.stay-remove{align-self:start;margin-top:25px;padding:10px;min-height:40px;font-size:13px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.toolbar>*{flex:1}.section{margin:28px 0}.divider{border-top:1px solid var(--line);padding-top:24px}#snapshot-list{padding-left:22px;font-size:14px;color:var(--muted)}#snapshot-list li{padding:4px 0;overflow-wrap:anywhere}#publication{overflow-wrap:anywhere;font-size:12px;color:var(--muted)}#conflict-review{border:2px solid #a65b24;border-radius:12px;padding:16px;background:#fff7e7;margin:18px 0}#picture{max-width:100%;height:auto;border:1px solid var(--line);border-radius:10px}#picture-area{margin-top:16px}#overlap{color:#75440e}.empty{padding:18px;background:var(--paper);border:1px dashed var(--line);border-radius:10px}summary{cursor:pointer;font-weight:650}
+@media(max-width:599px){body{padding:24px 16px 40px}h1{font-size:32px}.credential-row{display:block}.credential-row button{width:100%;margin-top:12px}.stay{display:flex;flex-direction:column;gap:14px;padding:16px}.stay label{width:100%;font-size:14px}.stay input{font-size:16px;padding:12px;min-height:46px}.stay-remove{margin-top:0;align-self:flex-end;min-height:44px;padding:10px 18px}.toolbar{flex-direction:column}.toolbar>*{width:100%;flex:auto}}
+</style></head><body><main>
+<h1>Lake TV stays</h1>
+<p class="lead">Turn Tailscale on to edit the guest list. Times are for the house in America/Chicago.</p>
+<section class="credentials" aria-label="Connection"><div class="credential-row"><label for="password">Booking password<input id="password" name="password" type="password" autocomplete="current-password"></label><button id="connect" type="button">Read the TV</button></div><p class="note">Use your password manager. This page keeps the password only while it is open.</p></section>
+<p id="status" role="status" aria-live="polite">Enter the password to read the TV.</p><p id="error" role="alert" hidden></p><button class="secondary" id="retry" type="button" hidden>Retry</button>
+<section id="unknown-review" class="credentials" hidden><h2>The previous update is unresolved</h2><p>Owner recovery has reopened editing, but it cannot establish whether your earlier update was applied. The current TV list and your draft are shown below. Acknowledge this uncertainty to review your draft. Saving again requires a separate review and a new Save.</p><button id="acknowledge-unknown" type="button">I understand. Review my draft</button></section>
+<div id="conflict-review" hidden><h2>Review the latest TV stays</h2><p>Your draft is still below. Compare it with the last published list before reapplying the edits you intend to keep.</p><button id="reapply" type="button">Reapply my draft to this revision</button></div>
+<section class="section"><h2>Your draft</h2><form id="form"><div id="stays"></div><p id="empty" class="empty">No stays in this draft.</p><p id="overlap" class="note" hidden></p><div class="toolbar"><button class="secondary" id="add" type="button" disabled>Add a stay</button><button id="save" type="submit" disabled>Save on the lake TV</button></div><p id="wake-default" class="note">Loading the optional default TV on time…</p><p class="note">A blank TV on time leaves automatic wake off for that stay. Removing a row takes effect only after Save is confirmed.</p></form></section>
+<section class="section divider"><details open><summary>Last published by the TV</summary><p id="publication">No confirmed snapshot yet.</p><ol id="snapshot-list"></ol></details></section>
+<section class="section divider"><h2>TV controls</h2><button class="secondary" id="preview" type="button" disabled>Show the TV</button><p class="note">This wakes the screen and brings the welcome page forward. The picture appears here; it can take about 30 seconds.</p><div id="picture-area" hidden><img id="picture" alt="Picture returned by the lake TV"><p class="note" id="picture-time"></p><button class="secondary" id="close-picture" type="button">Close picture</button></div></section>
+<section class="section divider"><button class="danger" id="clear" type="button" disabled>Delete all stays</button><p class="note">Removes every booking, including future stays, and the automatic wake schedule after the TV confirms.</p></section>
 </main>
-<script src="assets/apply-stay.js?v=10"></script>
+<script src="assets/device-state.js?v=12"></script><script src="assets/apply-stay.js?v=12"></script><script src="assets/update-state.js?v=12"></script>
 <script>
 (function(){
-  var KEY='ssh-lake-tv-remote-v1';
-  var APPLY='https://yamesmack.github.io/airbnb-welcome-screen-live/apply.html';
-  var DEFAULT_HOST='http://shield.tail240fad.ts.net:2323';
-  function $(id){return document.getElementById(id);}
-  function load(){
-    try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}
+  'use strict';
+  const GATEWAY='https://home-mini.tail240fad.ts.net';
+  const D=window.SSHDeviceState,U=window.SSHUpdateState,$=id=>document.getElementById(id);
+  let state=U.initialState(),controller=null,credentialValid=false,defaultWake='',rowSerial=0,painted='',problem='',pictureUrl=null,pictureBusy=false,pictureController=null,credentialTimer=null,preparing=null;
+  // Origin-scoped removal can only remove this page's old credential copy.
+  try{localStorage.removeItem('ssh-lake-tv-remote-v1');}catch(_){}
+  function dispatch(event){state=U.transition(state,event);render();}
+  function editable(){return credentialValid&&!preparing&&!state.operation&&state.confirmed&&!state.confirmed.readOnly&&!state.confirmed.pending&&['ready','dirty','confirmed'].includes(state.phase);}
+  function errorText(error){return error&&error.name==='AbortError'?'The request timed out.':error&&error.message||'The TV could not be reached.';}
+  function showError(text){problem=text;render();}
+  function render(){
+    $('status').dataset.phase=state.phase;
+    $('status').textContent=state.message||(!$('password').value?'Enter the password to read the TV.':state.phase==='loading'?'Reading the last published TV snapshot…':state.phase==='dirty'?'Unsaved changes':state.phase==='ready'?'Guest list loaded. Edit the draft and save when ready.':'');
+    $('error').textContent=problem;$('error').hidden=!problem;
+    $('retry').hidden=!$('password').value||(!state.operation&&!['error','read-only','conflict'].includes(state.phase)&&!problem&&!state.message.includes('Automatic retry stopped'));
+    const canEdit=editable();for(const id of ['add','save','clear'])$(id).disabled=!canEdit;
+    $('clear').disabled=!canEdit||!state.confirmed.stays.length;$('preview').disabled=!$('password').value||pictureBusy;
+    $('conflict-review').hidden=!['conflict','read-only'].includes(state.phase)||!!state.operation||!state.confirmed||state.confirmed.readOnly;
+    $('reapply').disabled=!credentialValid||!!state.operation||!state.confirmed||state.confirmed.readOnly;
+    $('unknown-review').hidden=state.phase!=='unknown-review'||!state.unknownReview;
+    $('acknowledge-unknown').disabled=!credentialValid||state.phase!=='unknown-review';
+    const draftKey=JSON.stringify(state.draft);
+    if(draftKey!==painted){painted=draftKey;$('stays').replaceChildren();state.draft.forEach((row,index)=>$('stays').appendChild(makeRow(row,index)));}
+    $('empty').hidden=!!state.draft.length;$('stays').querySelectorAll('input,button').forEach(el=>el.disabled=!canEdit);
+    const overlap=typeof describeStayOverlap==='function'?describeStayOverlap(state.draft):'';$('overlap').textContent=overlap||'';$('overlap').hidden=!overlap;
+    if(state.confirmed){const snapshot=state.confirmed;
+      $('publication').textContent='Published '+new Date(snapshot.publishedAt).toLocaleString()+'. Revision '+snapshot.revision+'. This is the TV publication time, not a live screen check.';
+      $('snapshot-list').replaceChildren();snapshot.stays.forEach(row=>{const item=document.createElement('li');item.textContent=row.name+' · '+row.checkIn+' to '+row.checkOut+' · TV on '+(row.wake||'off');$('snapshot-list').appendChild(item);});
+      if(!snapshot.stays.length){const item=document.createElement('li');item.textContent='No stays';$('snapshot-list').appendChild(item);}
+    }else{$('publication').textContent='No usable current snapshot. Read the TV before editing.';$('snapshot-list').replaceChildren();}
   }
-  function remember(changes){
-    var next=load();
-    Object.keys(changes).forEach(function(k){next[k]=changes[k];});
-    try{localStorage.setItem(KEY,JSON.stringify(next));}catch(e){}
-  }
-  function saveRemote(host,password){
-    if(!password)return;
-    remember({host:host,password:password});
-  }
-  var reloadOnPassword=false;
-  function restorePassword(){
-    var stored=load();
-    var field=$('password');
-    var wasEmpty=field&&!field.value;
-    if(stored.password&&wasEmpty)field.value=stored.password;
-    if(reloadOnPassword&&wasEmpty&&field&&field.value)loadStayList(0);
-  }
-  var stored=load();
-  if(stored.host && stored.host.replace(/\/$/,'')!=='http://shield:2323') $('host').value=stored.host;
-  else $('host').value=DEFAULT_HOST;
-  restorePassword();
-  function endSequence(){
-    releaseTvSequence(sequence);
-    setActionsDisabled(false);
-  }
-  function onPageShow(){
-    restorePassword();
-    endSequence();
-  }
-  window.addEventListener('pageshow',onPageShow);
-  [0,400,1200].forEach(function(ms){setTimeout(restorePassword,ms);});
-  function rememberRemote(){
-    saveRemote(($('host').value||DEFAULT_HOST).replace(/\/$/,''),$('password').value);
-  }
-  $('password').addEventListener('input',function(){
-    rememberRemote();
-    if($('password').value)loadStayList(0);
-  });
-  $('host').addEventListener('change',rememberRemote);
-
-  var STAYS_URL='https://home-mini.tail240fad.ts.net/ssh-stays';
-  var houseTime='';
-  var rowSeq=0;
-  var sequence={busy:false};
-  var staysReady=false;
-  var edited=false;
-  var stayLoading=false;
-  function blankRow(){return {name:'',checkIn:'',checkOut:'',wake:''};}
-  function sameStay(a,b){
-    return a.name===b.name&&a.checkIn===b.checkIn&&a.checkOut===b.checkOut&&a.wake===b.wake;
-  }
-  function setActionsDisabled(disabled){
-    $('preview').disabled=disabled;
-    $('add').disabled=disabled;
-    $('clear').disabled=disabled||!staysReady;
-    var submit=$('form').querySelector('button[type="submit"]');
-    if(submit)submit.disabled=disabled||!staysReady;
-    $('save-hold').hidden=!!staysReady;
-  }
-  function readRows(){
-    return Array.prototype.map.call(document.querySelectorAll('#stays .stay'),function(el){
-      return {
-        name:el.querySelector('.stay-name').value.trim(),
-        checkIn:el.querySelector('.stay-in').value,
-        checkOut:el.querySelector('.stay-out').value,
-        wake:el.querySelector('.stay-wake').value
-      };
+  function makeRow(row,index){
+    const el=document.createElement('div');el.className='stay';const serial=++rowSerial;
+    [['name','Guest','text'],['checkIn','Check-in','date'],['checkOut','Check-out','date'],['wake','TV on','time']].forEach(([key,label,type])=>{
+      const wrap=document.createElement('label');wrap.textContent=label;const input=document.createElement('input');input.id='stay-'+serial+'-'+key;input.className='stay-'+({name:'name',checkIn:'in',checkOut:'out',wake:'wake'}[key]);input.type=type;input.value=row[key];input.autocomplete='off';if(key==='wake')input.step='60';wrap.appendChild(input);el.appendChild(wrap);
+      input.addEventListener('input',()=>{if(!editable())return;const draft=JSON.parse(JSON.stringify(state.draft));draft[index][key]=input.value;painted=JSON.stringify(draft);dispatch({type:'EDIT',draft});});
     });
+    const remove=document.createElement('button');remove.type='button';remove.className='secondary stay-remove';remove.textContent='Remove';remove.setAttribute('aria-label','Remove stay '+(index+1));remove.addEventListener('click',()=>{if(!editable())return;dispatch({type:'EDIT',draft:state.draft.filter((_,i)=>i!==index)});const next=$('stays').children[Math.min(index,state.draft.length-1)];(next?next.querySelector('input'):$('add')).focus();});el.appendChild(remove);return el;
   }
-  function refreshNotes(){
-    var rows=readRows();
-    var now=new Date();
-    Array.prototype.forEach.call(document.querySelectorAll('#stays .stay'),function(el,i){
-      el.querySelector('.stay-note').textContent=describeRowWake(rows[i].checkIn,rows[i].wake,now).text;
-    });
-    var overlap=describeStayOverlap(rows);
-    $('overlap').hidden=!overlap;
-    $('overlap').textContent=overlap||'';
+  async function requestBody(url,options={},deadlineMs=8000,kind='json'){
+    const ac=new AbortController(),external=options.signal;let timer,onAbort;
+    const cancelled=new Promise((_,reject)=>{onAbort=()=>{ac.abort();reject(new DOMException('Aborted','AbortError'));};if(external?.aborted)onAbort();else external?.addEventListener('abort',onAbort,{once:true});timer=setTimeout(onAbort,Math.max(1,deadlineMs));});
+    try{return await Promise.race([(async()=>{const response=await fetch(url,{...options,signal:ac.signal,cache:'no-store',credentials:'omit',redirect:'error',referrerPolicy:'no-referrer'});if(kind==='blob'&&response.ok){const blob=await response.blob();if(!['image/png','image/jpeg'].includes(blob.type)||blob.size>8*1024*1024)throw Error('Invalid TV picture');return {status:response.status,body:blob};}return {status:response.status,body:await response.json()};})(),cancelled]);}
+    finally{clearTimeout(timer);external?.removeEventListener('abort',onAbort);}
   }
-  function paintRow(row){
-    var id=++rowSeq;
-    var el=document.createElement('tr');
-    el.className='stay';
-    el.innerHTML=
-      '<td><input id="stay-name-'+id+'" class="stay-name" maxlength="100" autocomplete="off" aria-label="Guest"></td>'+
-      '<td><input id="stay-in-'+id+'" class="stay-in" type="date" aria-label="Check-in"></td>'+
-      '<td><input id="stay-out-'+id+'" class="stay-out" type="date" aria-label="Check-out"></td>'+
-      '<td><input id="stay-wake-'+id+'" class="stay-wake" type="time" step="60" aria-label="TV on">'+
-      '<p class="note stay-note" aria-live="polite"></p></td>'+
-      '<td><button class="secondary stay-remove" type="button">Remove</button></td>';
-    el.querySelector('.stay-name').value=row.name||'';
-    el.querySelector('.stay-in').value=row.checkIn||'';
-    el.querySelector('.stay-out').value=row.checkOut||'';
-    el.querySelector('.stay-wake').value=row.wake||'';
-    el.addEventListener('input',function(){edited=true;refreshNotes();});
-    el.addEventListener('change',function(){edited=true;refreshNotes();});
-    el.querySelector('.stay-remove').addEventListener('click',function(){
-      edited=true;
-      var rows=readRows().filter(function(_,i){return $('stays').children[i]!==el;});
-      if(!rows.length)rows=[blankRow()];
-      renderStays(rows);
-    });
-    return el;
-  }
-  function renderStays(rows){
-    var host=$('stays');
-    host.innerHTML='';
-    rows.forEach(function(row){host.appendChild(paintRow(row));});
-    refreshNotes();
-  }
-  setActionsDisabled(false);
-  $('add').addEventListener('click',function(){
-    if($('add').disabled)return;
-    edited=true;
-    var rows=readRows();
-    rows.push(blankRow());
-    renderStays(rows);
-  });
-
-  function show(el,msg){
-    $('alert').hidden=true;$('ok').hidden=true;
-    el.hidden=!msg;
-    el.textContent=msg||'';
-  }
-  function publicStay(row){
-    return {
-      name:String(row&&row.name||'').trim(),
-      checkIn:String(row&&row.checkIn||''),
-      checkOut:String(row&&row.checkOut||''),
-      wake:String(row&&row.wake||'')
-    };
-  }
-  function applyLoaded(rows){
-    rows=rows.map(publicStay);
-    if(edited){
-      readRows().forEach(function(row){
-        var empty=!(row.name||row.checkIn||row.checkOut||row.wake);
-        if(empty){rows.push(row);return;}
-        if(!rows.some(function(server){return sameStay(server,row);}))rows.push(row);
-      });
-    }
-    if(!rows.length)rows=[blankRow()];
-    if(!edited&&houseTime&&rows.length===1&&!rows[0].name&&!rows[0].checkIn&&!rows[0].checkOut&&!rows[0].wake){
-      rows[0].wake=houseTime;
-    }
-    staysReady=true;
-    edited=false;
-    renderStays(rows);
-    setActionsDisabled(sequence.busy);
-    show($('alert'),'');
-  }
-  function readStayList(){
-    var password=$('password').value;
-    if(!password)return Promise.reject(new Error('password'));
-    return fetch(STAYS_URL,{
-      cache:'no-store',
-      targetAddressSpace:'local',
-      headers:{'X-Fully-Password':password}
-    }).then(function(r){
-      return r.json().catch(function(){return null;}).then(function(data){
-        if(r.status===401)throw new Error('password');
-        if(data&&data.error==='unreadable')throw new Error('unreadable');
-        if(!r.ok)throw new Error('status');
-        if(!data||!Array.isArray(data.stays))throw new Error('unreadable');
-        return data.stays.map(publicStay);
-      });
-    });
-  }
-  var houseReady=fetch('config.json',{cache:'no-store'}).then(function(r){return r.json();}).catch(function(){return {};});
-  function loadStayList(attempt){
-    if(staysReady||stayLoading)return;
-    if(!$('password').value){
-      staysReady=false;
-      if(!attempt&&!edited)renderStays([]);
-      setActionsDisabled(sequence.busy);
-      show($('alert'),'The password is needed to load the list.');
-      return;
-    }
-    stayLoading=true;
-    readStayList().then(function(rows){
-      stayLoading=false;
-      return houseReady.then(function(config){
-        if(staysReady)return;
-        houseTime=checkInWakeTime(config&&config.houseRules&&config.houseRules.checkInTime)||'';
-        applyLoaded(rows);
-        show($('alert'),'');
-      });
-    }).catch(function(err){
-      stayLoading=false;
-      if(staysReady)return;
-      staysReady=false;
-      if(!attempt&&!edited)renderStays([]);
-      setActionsDisabled(sequence.busy);
-      if(err&&err.message==='password'){
-        show($('alert'),'The password is needed to load the list.');
-        return;
-      }
-      if(attempt<90)setTimeout(function(){loadStayList(attempt+1);},1000);
-    });
-  }
-  reloadOnPassword=true;
-  loadStayList(0);
-  function filledRows(){
-    return readRows().filter(function(row){return row.name||row.checkIn||row.checkOut;});
-  }
-  function stayUrl(){
-    return APPLY+'?setStay='+encodeStayPayload(stayListPayload(filledRows()));
-  }
-  function clearUrl(){
-    return APPLY+'?setStay='+encodeStayPayload({clear:true,wake:'off'});
-  }
-  function commandUrl(cmd, extra){
-    var host=($('host').value||DEFAULT_HOST).replace(/\/$/,'');
-    return fullyCommandUrl(host,$('password').value,cmd,extra);
-  }
-  function requirePassword(){
-    var host=($('host').value||DEFAULT_HOST).replace(/\/$/,'');
-    var password=$('password').value;
-    if(!password){
-      show($('alert'),'Open First-time setup and enter the Fully password. Once is enough.');
+  const requestJson=(url,options,deadlineMs)=>requestBody(url,options,deadlineMs,'json');
+  function authOptions(signal,body){return {signal,headers:{'X-Fully-Password':$('password').value,...(body?{'Content-Type':'application/json'}:{})},...(body?{method:'POST',body:JSON.stringify(body)}:{})};}
+  function active(generation,signal){return generation===state.generation&&!signal.aborted;}
+  function handleReply(reply,generation){
+    if(generation!==state.generation)return false;const body=reply.body||{},op=state.operation;
+    if(reply.status===409&&body.code==='UNKNOWN_PRE_RECOVERY'){
+      dispatch({type:'UNKNOWN_OUTCOME',generation,body});
+      if(state.phase==='unknown-review'){credentialValid=true;problem='';render();}
+      else showError('The previous update remains unknown. Owner recovery and a fresh current TV list are required before review.');
       return false;
     }
-    saveRemote(host,password);
-    return true;
+    if(op&&body.receipt&&reply.status!==202){
+      const terminalPair=reply.status===200&&body.receipt.outcome==='committed'||reply.status===409&&body.receipt.outcome==='conflict'||reply.status===410&&body.receipt.outcome==='expired';
+      if(!terminalPair){showError('The response did not confirm a terminal outcome. This update is still unresolved.');return false;}
+      if(body.operationId!==op.operationId||body.requestHash!==op.requestHash||!U.receiptMatches(state,body.receipt)){showError('The TV returned a receipt for a different update. This update is still unresolved.');return false;}
+      const r=body.receipt,type=r.outcome==='committed'?'RECEIPT':r.reason==='EPOCH_CONFLICT'?'EPOCH_CONFLICT':r.outcome==='expired'?'EXPIRED':'CONFLICT';dispatch({type,generation,operationId:op.operationId,requestHash:op.requestHash,receipt:r,snapshot:body.snapshot});return !state.operation;
+    }
+    if(reply.status===202&&op){
+      if(body.operationId!==op.operationId||body.requestHash!==op.requestHash||body.expiresAt!==null||body.statusUri!==op.statusUri||!['PENDING','UNCONFIRMED'].includes(body.code)){showError('The gateway returned unreadable pending state. The original update is retained.');return false;}
+      dispatch({type:'ADMITTED',generation,operationId:body.operationId,requestHash:body.requestHash,expiresAt:body.expiresAt,statusUri:body.statusUri});dispatch({type:body.code,generation,operationId:body.operationId,requestHash:body.requestHash});return false;
+    }
+    const map={MAILBOX_BUSY:'BUSY',STORE_WRITE_FAILED:'BUSY',REVISION_CONFLICT:'CONFLICT',EPOCH_CONFLICT:'EPOCH_CONFLICT',RECOVERY_REQUIRED:'RECOVERY_REQUIRED',COMMAND_EXPIRED:'EXPIRED',LOCK_TIMEOUT:'NOT_APPLIED'};
+    if(map[body.code])dispatch({type:map[body.code],generation,operationId:body.operationId,admitted:body.admitted,code:body.code});
+    if(reply.status>=400){problem=reply.status===401?'Password was not accepted. Check it and read the TV again.':reply.status===403?'This page is not authorized by the gateway.':body.code==='MAILBOX_BUSY'?'Another update is still waiting for the TV.':body.code==='RECOVERY_REQUIRED'?'Owner resolution is required before editing.':'The gateway could not complete this request ('+(body.code||reply.status)+').';render();}return false;
   }
-  function offerSavedPassword(){
+  function pause(ms,signal){return new Promise((resolve,reject)=>{const done=()=>{clearTimeout(timer);signal.removeEventListener('abort',abort);resolve();},abort=()=>{clearTimeout(timer);signal.removeEventListener('abort',abort);reject(new DOMException('Aborted','AbortError'));},timer=setTimeout(done,ms);if(signal.aborted)abort();else signal.addEventListener('abort',abort,{once:true});});}
+  async function readLoop(generation,signal,end,allowResubmit=false){
+    const delays=[1000,2000,4000,8000];let attempt=0,resubmitted=false;
+    while(active(generation,signal)&&Date.now()<end){
+      try{const op=state.operation;
+        if(op){let reply;
+          if(allowResubmit&&!resubmitted&&op.request&&op.admission==='rejected'){resubmitted=true;reply=await requestJson(GATEWAY+'/ssh-stays',authOptions(signal,{...op.request,retry:false,expiresAt:null}),Math.min(8000,end-Date.now()));}
+          else{reply=await requestJson(GATEWAY+op.statusUri,authOptions(signal),Math.min(8000,end-Date.now()));if(active(generation,signal)&&reply.status===404&&allowResubmit&&!resubmitted&&op.request&&op.admission==='unknown'){resubmitted=true;reply=await requestJson(GATEWAY+'/ssh-stays',authOptions(signal,{...op.request,retry:true,expiresAt:null}),Math.min(8000,end-Date.now()));}}
+          if(!active(generation,signal))return;if(handleReply(reply,generation))return;if([400,401,403,405,413,415,422].includes(reply.status)||['read-only','unknown-review'].includes(state.phase))return;
+        }else{const reply=await requestJson(GATEWAY+'/ssh-stays',authOptions(signal),Math.min(8000,end-Date.now()));if(!active(generation,signal))return;
+          if(reply.status===200){if(!U.validateSnapshot(reply.body).ok){dispatch({type:'RECOVERY_REQUIRED',generation});showError('The TV snapshot is unreadable. Editing is disabled.');return;}credentialValid=true;problem='';dispatch({type:'READ_OK',generation,snapshot:reply.body});if(!state.operation)return;}
+          else{handleReply(reply,generation);if(reply.status<500)return;}
+        }
+      }catch(error){if(!active(generation,signal))return;problem=errorText(error);render();}
+      const wait=Math.min(delays[Math.min(attempt++,delays.length-1)],end-Date.now());if(wait>0)try{await pause(wait,signal);}catch(_){return;}
+    }
+    if(active(generation,signal))dispatch({type:state.operation?'TIMEOUT':'READ_FAILED',generation,exhausted:true});
+  }
+  function startRead(type='READ_START',allowResubmit=false){preparing=null;controller?.abort();controller=new AbortController();problem='';dispatch({type});if(!$('password').value){credentialValid=false;render();return;}void readLoop(state.generation,controller.signal,Date.now()+30000,allowResubmit);}
+  async function submit(kind){
+    if(!editable())return;problem='';
+    const request={protocol:2,operationId:crypto.randomUUID(),deviceEpoch:state.baseline.deviceEpoch,expectedRevision:state.baseline.revision,kind,payload:kind==='delete-all-stays'?{}:{stays:state.draft.map(row=>({...row}))}};
+    if(!D.validateSubmission({...request,retry:false,expiresAt:null}).ok){showError('Check each guest name (up to 120 characters), check-in, check-out and TV on time. Dates must be real and check-out cannot precede check-in.');return;}
+    controller?.abort();controller=new AbortController();const signal=controller.signal,generation=state.generation,token={};preparing=token;render();
+    try{const hash=await D.hashCommand({...request,expiresAt:null},async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),b=>b.toString(16).padStart(2,'0')).join(''));
+      if(preparing!==token||!active(generation,signal))return;preparing=null;if(!editable())return;dispatch({type:'SUBMIT',request,requestHash:hash});const end=Date.now()+30000;
+      try{const reply=await requestJson(GATEWAY+'/ssh-stays',authOptions(signal,{...request,retry:false,expiresAt:null}));if(!active(generation,signal))return;if(handleReply(reply,generation))return;if([400,401,403,405,413,415,422].includes(reply.status)||state.phase==='read-only'||state.operation?.admission==='rejected')return;}
+      catch(error){if(!active(generation,signal))return;problem=errorText(error);dispatch({type:'TIMEOUT',generation});}
+      await readLoop(generation,signal,end);
+    }catch(error){if(active(generation,signal))showError(errorText(error));}finally{if(preparing===token){preparing=null;render();}}
+  }
+  $('form').addEventListener('submit',event=>{event.preventDefault();void submit('replace-stays');});
+  $('add').addEventListener('click',()=>{if(!editable())return;dispatch({type:'EDIT',draft:[...state.draft,{name:'',checkIn:'',checkOut:'',wake:defaultWake}]});$('stays').lastElementChild.querySelector('input').focus();});
+  $('clear').addEventListener('click',()=>{if(!editable())return;const count=state.confirmed.stays.length;if(confirm('Delete all '+count+' '+(count===1?'stay':'stays')+', including future bookings, and remove automatic TV wakes?'))void submit('delete-all-stays');});
+  $('connect').addEventListener('click',()=>startRead());$('retry').addEventListener('click',()=>startRead('RETRY',true));
+  $('acknowledge-unknown').addEventListener('click',()=>{
+    if(!credentialValid||state.phase!=='unknown-review'||!state.operation||!state.unknownReview)return;
     try{
-      if(window.PasswordCredential&&navigator.credentials&&navigator.credentials.store){
-        navigator.credentials.store(new PasswordCredential($('form'))).catch(function(){});
-      }
-    }catch(e){}
-  }
-  function fullyStep(cmd,extra,win){
-    var url=commandUrl(cmd,extra);
-    if(cmd==='getScreenshot'){
-      location.assign(url);
-      return null;
-    }
-    if(win){
-      try{win.location.replace(url);return win;}catch(e){}
-    }
-    return window.open(url,'ssh-fully-wake');
-  }
-  function later(ms,fn){setTimeout(fn,ms);}
-  function clock(){return Date.now();}
-  function showTheTv(){
-    if(!claimTvSequence(sequence))return;
-    if(!requirePassword()){endSequence();return;}
-    if(!openTvPicture(fullyStep,later,clock)){
-      endSequence();
-      show($('alert'),'Allow pop-ups for this page, then tap Show the TV again.');
-      return;
-    }
-    show($('ok'),'Waking the TV… The picture opens in about 10 seconds.');
-    setActionsDisabled(true);
-  }
-  function sendList(){
-    if(!staysReady)return false;
-    if(!requirePassword())return false;
-    offerSavedPassword();
-    if(!sendStayThenPicture(fullyStep,later,clock,stayUrl())){
-      show($('alert'),'Allow pop-ups for this page, then try again.');
-      return false;
-    }
-    show($('ok'),'Waking the TV… The stay goes on once it is awake, then the TV picture opens in about 12 seconds.');
-    return true;
-  }
-  function sendClear(){
-    if(!staysReady)return false;
-    if(!requirePassword())return false;
-    offerSavedPassword();
-    if(!sendStayThenPicture(fullyStep,later,clock,clearUrl())){
-      show($('alert'),'Allow pop-ups for this page, then try again.');
-      return false;
-    }
-    show($('ok'),'Waking the TV… The stay goes on once it is awake, then the TV picture opens in about 12 seconds.');
-    return true;
-  }
-
-  $('form').addEventListener('submit',function(e){
-    e.preventDefault();
-    if(sequence.busy)return;
-    if(!staysReady){
-      setActionsDisabled(sequence.busy);
-      return;
-    }
-    var rows=filledRows();
-    if(!rows.length){
-      show($('alert'),'Enter a guest name and both dates.');
-      return;
-    }
-    for(var i=0;i<rows.length;i++){
-      if(!rows[i].name||!rows[i].checkIn||!rows[i].checkOut){
-        show($('alert'),'Enter a guest name and both dates.');
-        return;
-      }
-      if(rows[i].checkIn>rows[i].checkOut){
-        show($('alert'),'Check-out needs to be on or after check-in.');
-        return;
-      }
-    }
-    if(!claimTvSequence(sequence))return;
-    if(!sendList()){endSequence();return;}
-    setActionsDisabled(true);
+      const next=U.transition(state,{type:'ACKNOWLEDGE_UNKNOWN'}),key='ssh-lake-tv-unknown-ack-v1';
+      const record={...state.unknownReview,requestHash:state.operation.requestHash,outcome:'unknown',acknowledgedAt:Date.now()};
+      const previous=JSON.parse(sessionStorage.getItem(key)||'[]'),fields=Object.keys(record).sort().join(',');
+      if(!Array.isArray(previous)||previous.length>32||previous.some(row=>!row||Object.keys(row).sort().join(',')!==fields||row.protocol!==2||row.outcome!=='unknown'||!Number.isSafeInteger(row.acknowledgedAt)||row.acknowledgedAt<0||!['operationId','deviceEpoch','recoveryId','barrierRevision'].every(k=>typeof row[k]==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(row[k]))||!(/^[0-9a-f]{64}$/).test(row.requestHash)))throw Error('Invalid acknowledgement history');
+      const bytes=JSON.stringify([...previous.filter(row=>row.operationId!==record.operationId),record].slice(-32));
+      sessionStorage.setItem(key,bytes);if(sessionStorage.getItem(key)!==bytes)throw Error('Acknowledgement readback failed');
+      state=next;problem='';render();$('reapply').focus();
+    }catch(_){showError('Your acknowledgment could not be recorded in this tab. The original update is still retained.');}
   });
-  $('preview').addEventListener('click',showTheTv);
-  $('clear').addEventListener('click',function(){
-    if(sequence.busy||!staysReady){
-      if(!staysReady)setActionsDisabled(sequence.busy);
-      return;
-    }
-    if(!confirm('Show the generic welcome on the TV?'))return;
-    if(!claimTvSequence(sequence))return;
-    if(!sendClear()){endSequence();return;}
-    setActionsDisabled(true);
-    renderStays([blankRow()]);
-  });
+  $('reapply').addEventListener('click',()=>{if(!credentialValid)return;try{dispatch({type:'REAPPLY'});problem='';render();}catch(error){showError(errorText(error));}});
+  $('password').addEventListener('input',()=>{credentialValid=false;controller?.abort();pictureController?.abort();clearTimeout(credentialTimer);dispatch({type:'READ_START'});credentialTimer=setTimeout(()=>startRead(),300);});
+  window.addEventListener('pageshow',()=>startRead('PAGE_SHOW'));
+  function closePicture(){if(pictureUrl)URL.revokeObjectURL(pictureUrl);pictureUrl=null;$('picture').removeAttribute('src');$('picture-area').hidden=true;}
+  $('close-picture').addEventListener('click',closePicture);
+  $('preview').addEventListener('click',async()=>{if(pictureBusy||!$('password').value)return;pictureBusy=true;pictureController=new AbortController();render();try{const reply=await requestBody(GATEWAY+'/ssh-tv/picture',authOptions(pictureController.signal,{}),35000,'blob');if(pictureController.signal.aborted)return;if(reply.status!==200)throw Error('The TV picture could not be retrieved.');closePicture();pictureUrl=URL.createObjectURL(reply.body);$('picture').src=pictureUrl;$('picture-time').textContent='Picture received '+new Date().toLocaleTimeString()+'.';$('picture-area').hidden=false;}catch(error){if(!pictureController.signal.aborted)showError(errorText(error));}finally{pictureBusy=false;render();}});
+  window.addEventListener('pagehide',()=>{preparing=null;controller?.abort();pictureController?.abort();closePicture();});
+  void requestJson('config.json',{},3000).then(reply=>{const value=reply.status===200&&reply.body&&reply.body.houseRules&&reply.body.houseRules.checkInTime;const match=typeof value==='string'&&/^(1[0-2]|[1-9]):([0-5]\d) (AM|PM)$/.exec(value);if(!match)throw Error('Default unavailable');const hour=Number(match[1])%12+(match[3]==='PM'?12:0);defaultWake=String(hour).padStart(2,'0')+':'+match[2];$('wake-default').textContent='New stays default to '+value+' at the house. You can change or clear the time.';}).catch(()=>{$('wake-default').textContent='Default TV on time is unavailable. New stays leave it blank until you choose one.';});
+  render();
 })();
-</script>
-</body>
-</html>
+</script></body></html>

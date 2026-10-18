@@ -5,10 +5,10 @@
 // Bump RELEASE when changing this list. Successful network responses always win.
 // A ?v=<digits> request is the stay script the page asked for. It is cached
 // under that exact URL. Any other query, including a guest update, is not stored.
-const RELEASE = '2026-10-09-2';
+const RELEASE = '2026-10-17-booking-2';
 const FILES = [
   'index.html', 'apply.html', 'stay.html', 'update.html', 'favicon.ico',
-  'assets/apply-stay.js', 'assets/favicon.svg', 'assets/qrcode.min.js',
+  'assets/device-state.js', 'assets/apply-stay.js', 'assets/update-state.js', 'assets/favicon.svg', 'assets/qrcode.min.js',
   'assets/fonts/Themysion.ttf', 'assets/fonts/inter-latin.woff2',
   'assets/fonts/special-elite-latin.woff2',
   'assets/art/awning.png', 'assets/art/crest.png', 'assets/art/doodle-frame.png',
@@ -18,7 +18,7 @@ const FILES = [
   'assets/art/tile-local-favorites.png', 'assets/art/tile-streaming.png',
   'assets/art/house-aerial.png', 'assets/art/tile-wifi.png', 'assets/art/walden-map.png', 'assets/art/weather-doodle.png'
 ];
-const VERSIONED = ['assets/apply-stay.js?v=10'];
+const VERSIONED = ['assets/device-state.js?v=12', 'assets/apply-stay.js?v=12', 'assets/update-state.js?v=12'];
 
 function siteCachePlan(requestHref, scope) {
   const url = new URL(requestHref);
@@ -41,6 +41,54 @@ function siteCachePlan(requestHref, scope) {
     store: !listed || (url.search && !versioned) ? null : (versioned ? exact.href : canonical.href),
     offline: versioned ? exact.href : canonical.href
   };
+}
+
+async function fetchWithinWholeBodyDeadline(request, ms, io) {
+  const controller = new AbortController();
+  let timer;
+  const deadline = new Promise((resolve, reject) => {
+    timer = io.setTimeout(() => {
+      controller.abort();
+      reject(new Error('site download deadline'));
+    }, ms);
+  });
+  try {
+    return await Promise.race([deadline, (async () => {
+      const response = await io.fetch(request, {signal:controller.signal, cache:'no-store'});
+      if (!response.ok) throw new Error('site response ' + response.status);
+      // Consume a clone before selecting the network response. Headers alone do
+      // not prove the shell finished downloading within its budget.
+      await response.clone().arrayBuffer();
+      return response;
+    })()]);
+  } finally {
+    io.clearTimeout(timer);
+  }
+}
+
+async function cacheCompletedResponse(key, response, cacheName, io) {
+  const cache = await io.caches.open(cacheName);
+  await cache.put(key, response);
+}
+
+async function fetchShell(request, plan, cacheName, io) {
+  let response;
+  try {
+    response = await fetchWithinWholeBodyDeadline(request, 3000, io);
+  } catch (networkError) {
+    try {
+      const cache = await io.caches.open(cacheName);
+      const saved = await cache.match(plan.offline);
+      if (saved) return saved;
+    } catch (_) { /* Keep the original network failure when cache access fails. */ }
+    throw networkError;
+  }
+  if (plan.store) {
+    const persistence = cacheCompletedResponse(plan.store, response.clone(), cacheName, io).catch(() => {});
+    // Cache persistence is best effort; it cannot replace a complete response.
+    try { io.waitUntil(persistence); } catch (_) {}
+  }
+  return response;
 }
 
 if (typeof self !== 'undefined' && self.addEventListener) {
@@ -67,24 +115,14 @@ if (typeof self !== 'undefined' && self.addEventListener) {
     if (event.request.method !== 'GET') return;
     const plan = siteCachePlan(event.request.url, self.registration.scope);
     if (!plan.listed) return;
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 3000);
-      try {
-        const response = await fetch(event.request, {signal:controller.signal, cache:'no-store'});
-        if (!response.ok) throw new Error('site response ' + response.status);
-        if (plan.store) await cache.put(plan.store, response.clone());
-        return response;
-      } catch (error) {
-        const saved = await cache.match(plan.offline);
-        if (saved) return saved;
-        throw error;
-      } finally { clearTimeout(timer); }
-    })());
+    event.respondWith(fetchShell(event.request, plan, CACHE, {
+      fetch:fetch.bind(self), caches, waitUntil:job=>event.waitUntil(job),
+      setTimeout:setTimeout.bind(self), clearTimeout:clearTimeout.bind(self)
+    }));
   });
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { RELEASE: RELEASE, FILES: FILES, VERSIONED: VERSIONED, siteCachePlan: siteCachePlan };
+  module.exports = { RELEASE, FILES, VERSIONED, siteCachePlan, fetchShell,
+    fetchWithinWholeBodyDeadline, cacheCompletedResponse };
 }
