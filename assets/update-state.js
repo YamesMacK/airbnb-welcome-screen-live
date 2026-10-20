@@ -109,7 +109,7 @@
           request.deviceEpoch!==s.baseline.deviceEpoch||request.expectedRevision!==s.baseline.revision||
           !D.validateSubmission({...request,retry:false,expiresAt:null}).ok||!digest.test(e.requestHash))throw new Error('Invalid submission');
         return {...s,phase:'sending',operation:{operationId:request.operationId,deviceEpoch:request.deviceEpoch,request:copy(request),requestHash:e.requestHash,
-          expiresAt:null,statusUri:'/ssh-stays/operations/'+request.operationId,submitted:true,admission:'unknown'},message:'Sending changesâ€¦'};
+          expiresAt:null,statusUri:'/ssh-stays/operations/'+request.operationId,submitted:true,admission:'unknown'},message:'Sending changes…'};
       }
       case 'ADMITTED':
         if(!op||e.operationId!==op.operationId||e.requestHash!==op.requestHash||e.expiresAt!==op.expiresAt||

@@ -17,11 +17,11 @@
 <h1>Shoreline Social House TV Guest Updater</h1>
 <p class="lead">Make sure Tailscale is on to make edits.</p>
 <section id="handoff" class="credentials" hidden><a id="private-link">Open private guest updater</a></section>
-<p id="status" role="status" aria-live="polite">Connecting to guest updaterâ€¦</p><p id="error" role="alert" hidden></p><button class="secondary" id="retry" type="button" hidden>Retry connection</button>
+<p id="status" role="status" aria-live="polite">Connecting to guest updater…</p><p id="error" role="alert" hidden></p><button class="secondary" id="retry" type="button" hidden>Retry connection</button>
 <div id="editor" hidden>
 <section id="unknown-review" class="credentials" hidden><h2>The previous update is unresolved</h2><p>Owner recovery has reopened editing, but it cannot establish whether your earlier update was applied. The current TV list and your changes are shown below. Acknowledge this uncertainty to review your changes. Saving again requires a separate review and a new Save.</p><button id="acknowledge-unknown" type="button">I understand. Review my changes</button></section>
 <div id="conflict-review" hidden><h2>Review the latest TV stays</h2><p>Your changes are still below. Compare it with the last published list before reapplying the edits you intend to keep.</p><button id="reapply" type="button">Reapply my changes to the saved list</button></div>
-<section class="section"><h2>Guest stays</h2><p class="note">After reopening this page, review the saved guest list before making new changes.</p><form id="form"><div id="stays"></div><p id="empty" class="empty">Guest list hasn't loaded yet.</p><p id="overlap" class="note" hidden></p><div class="toolbar"><button class="secondary" id="add" type="button" disabled>Add a stay</button><button id="save" type="submit" disabled>Save changes</button></div><p id="unsaved-note" class="note" hidden>Unsaved changes stay in this open page until you save.</p><p id="wake-default" class="note">Loading the optional default TV on timeâ€¦</p><p class="note">Leave TV on at check-in blank to keep automatic wake off. Removing a stay takes effect after Save is confirmed.</p></form></section>
+<section class="section"><h2>Guest stays</h2><p class="note">After reopening this page, review the saved guest list before making new changes.</p><form id="form"><div id="stays"></div><p id="empty" class="empty">Guest list hasn't loaded yet.</p><p id="overlap" class="note" hidden></p><div class="toolbar"><button class="secondary" id="add" type="button" disabled>Add a stay</button><button id="save" type="submit" disabled>Save changes</button></div><p id="unsaved-note" class="note" hidden>Unsaved changes stay in this open page until you save.</p><p id="wake-default" class="note">Loading the optional default TV on time…</p><p class="note">Leave TV on at check-in blank to keep automatic wake off. Removing a stay takes effect after Save is confirmed.</p></form></section>
 <section class="section divider"><details><summary>Saved guest list</summary><p id="publication">No confirmed snapshot yet.</p><ul id="snapshot-list"></ul></details></section>
 <section class="section divider"><h2>TV controls</h2><button class="secondary" id="preview" type="button" disabled>Wake TV and view screen</button><p class="note">Optional. Wakes the TV and opens the welcome screen. You don't need this to confirm a save. The picture can take about 30 seconds.</p><div id="picture-area" hidden><img id="picture" alt="Picture returned by the TV"><p class="note" id="picture-time"></p><button class="secondary" id="close-picture" type="button">Close picture</button></div></section>
 <section class="section divider"><button class="danger" id="clear" type="button" disabled>Delete all stays</button><p class="note">Removes every booking, including future stays, and the automatic wake schedule after the TV confirms.</p></section>
@@ -49,7 +49,7 @@
   }
   function render(){
     $('status').dataset.phase=state.phase;
-    $('status').textContent=state.access==='checking'?'Connecting to guest updaterâ€¦':state.access==='denied'?'Editing is unavailable. Your changes remain in this open page. An earlier save may still be processing.':state.message||(state.phase==='loading'?'Loading guest listâ€¦':state.phase==='dirty'?'Unsaved changes':state.phase==='ready'?'Guest list loaded.':'');
+    $('status').textContent=state.access==='checking'?'Connecting to guest updater…':state.access==='denied'?'Editing is unavailable. Your changes remain in this open page. An earlier save may still be processing.':state.message||(state.phase==='loading'?'Loading guest list…':state.phase==='dirty'?'Unsaved changes':state.phase==='ready'?'Guest list loaded.':'');
     $('error').textContent=problem;$('error').hidden=!problem;
     $('retry').hidden=!privateMode||state.access==='checking'||(!state.operation&&state.access!=='denied'&&!['error','read-only','conflict'].includes(state.phase)&&!problem&&!state.message.includes('Automatic retry stopped'));
     const canEdit=editable();for(const id of ['add','save','clear'])$(id).disabled=!canEdit;
@@ -67,7 +67,7 @@
     const overlap=typeof describeStayOverlap==='function'?describeStayOverlap(state.draft):'';$('overlap').textContent=overlap||'';$('overlap').hidden=!overlap;
     if(state.confirmed){const snapshot=state.confirmed;
       $('publication').textContent='Last updated '+new Date(snapshot.publishedAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
-      $('snapshot-list').replaceChildren();snapshot.stays.forEach(row=>{const item=document.createElement('li');item.textContent=row.name+' Â· '+stayDate(row.checkIn)+' to '+stayDate(row.checkOut)+' Â· '+wakeTime(row.wake);$('snapshot-list').appendChild(item);});
+      $('snapshot-list').replaceChildren();snapshot.stays.forEach(row=>{const item=document.createElement('li');item.textContent=row.name+' · '+stayDate(row.checkIn)+' to '+stayDate(row.checkOut)+' · '+wakeTime(row.wake);$('snapshot-list').appendChild(item);});
       if(!snapshot.stays.length){const item=document.createElement('li');item.textContent='No stays';$('snapshot-list').appendChild(item);}
     }else{$('publication').textContent='No usable current snapshot. Read the TV before editing.';$('snapshot-list').replaceChildren();}
   }
