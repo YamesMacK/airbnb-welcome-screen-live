@@ -5,8 +5,8 @@
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="SSH TV">
-<title>SSH TV · Stays</title>
+<meta name="apple-mobile-web-app-title" content="Shoreline Social House TV Guest Updater">
+<title>Shoreline Social House TV Guest Updater</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <style>
 @font-face{font-family:Inter;src:url(assets/fonts/inter-latin.woff2) format('woff2');font-weight:100 900;font-display:swap}
@@ -14,54 +14,66 @@
 *{box-sizing:border-box}body{margin:0;padding:30px 20px 60px}main{max-width:850px;margin:auto}h1{font-size:36px;letter-spacing:-1px;margin:0 0 10px}h2{font-size:20px;margin:0 0 14px}p{line-height:1.5}.lead,.note{color:var(--muted)}.lead{margin:0 0 24px}.note{font-size:13px;margin:8px 0}.credentials{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:20px}.credential-row{display:flex;align-items:end;gap:12px}.credential-row label{flex:1;margin:0}.credential-row button{width:auto;white-space:nowrap}label{display:block;font-size:13px;font-weight:650}input{display:block;width:100%;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid #8a7aaa;border-radius:8px;padding:12px;margin-top:7px}button{font:inherit;font-weight:650;min-height:46px;padding:12px 16px;background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:9px;cursor:pointer}button.secondary{color:var(--ink);background:var(--paper)}button.danger{color:var(--red);border-color:var(--red);background:transparent}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #fd766d;outline-offset:3px}[hidden]{display:none!important}#status{min-height:48px;border-left:4px solid var(--ink);padding:12px 14px;background:var(--paper);border-radius:0 8px 8px 0;margin:16px 0;overflow-wrap:anywhere}#status[data-phase=confirmed]{border-color:#267243}#status[data-phase=error],#status[data-phase=unconfirmed],#status[data-phase=read-only]{border-color:var(--red)}#error{color:var(--red);font-size:14px}#stays{display:grid;gap:10px}.stay{display:grid;grid-template-columns:minmax(125px,1.4fr) minmax(125px,1fr) minmax(125px,1fr) minmax(95px,.8fr) auto;align-items:start;gap:10px;padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:12px}.stay input{font-size:14px;padding:10px 7px}.stay-remove{align-self:start;margin-top:25px;padding:10px;min-height:40px;font-size:13px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.toolbar>*{flex:1}.section{margin:28px 0}.divider{border-top:1px solid var(--line);padding-top:24px}#snapshot-list{padding-left:22px;font-size:14px;color:var(--muted)}#snapshot-list li{padding:4px 0;overflow-wrap:anywhere}#publication{overflow-wrap:anywhere;font-size:12px;color:var(--muted)}#conflict-review{border:2px solid #a65b24;border-radius:12px;padding:16px;background:#fff7e7;margin:18px 0}#picture{max-width:100%;height:auto;border:1px solid var(--line);border-radius:10px}#picture-area{margin-top:16px}#overlap{color:#75440e}.empty{padding:18px;background:var(--paper);border:1px dashed var(--line);border-radius:10px}summary{cursor:pointer;font-weight:650}
 @media(max-width:599px){body{padding:24px 16px 40px}h1{font-size:32px}.credential-row{display:block}.credential-row button{width:100%;margin-top:12px}.stay{display:flex;flex-direction:column;gap:14px;padding:16px}.stay label{width:100%;font-size:14px}.stay input{font-size:16px;padding:12px;min-height:46px}.stay-remove{margin-top:0;align-self:flex-end;min-height:44px;padding:10px 18px}.toolbar{flex-direction:column}.toolbar>*{width:100%;flex:auto}}
 </style></head><body><main>
-<h1>Lake TV stays</h1>
-<p class="lead">Turn Tailscale on to edit the guest list. Times are for the house in America/Chicago.</p>
-<section class="credentials" aria-label="Connection"><div class="credential-row"><label for="password">Booking password<input id="password" name="password" type="password" autocomplete="current-password"></label><button id="connect" type="button">Read the TV</button></div><p class="note">Use your password manager. This page keeps the password only while it is open.</p></section>
-<p id="status" role="status" aria-live="polite">Enter the password to read the TV.</p><p id="error" role="alert" hidden></p><button class="secondary" id="retry" type="button" hidden>Retry</button>
-<section id="unknown-review" class="credentials" hidden><h2>The previous update is unresolved</h2><p>Owner recovery has reopened editing, but it cannot establish whether your earlier update was applied. The current TV list and your draft are shown below. Acknowledge this uncertainty to review your draft. Saving again requires a separate review and a new Save.</p><button id="acknowledge-unknown" type="button">I understand. Review my draft</button></section>
-<div id="conflict-review" hidden><h2>Review the latest TV stays</h2><p>Your draft is still below. Compare it with the last published list before reapplying the edits you intend to keep.</p><button id="reapply" type="button">Reapply my draft to this revision</button></div>
-<section class="section"><h2>Your draft</h2><form id="form"><div id="stays"></div><p id="empty" class="empty">No stays in this draft.</p><p id="overlap" class="note" hidden></p><div class="toolbar"><button class="secondary" id="add" type="button" disabled>Add a stay</button><button id="save" type="submit" disabled>Save on the lake TV</button></div><p id="wake-default" class="note">Loading the optional default TV on time…</p><p class="note">A blank TV on time leaves automatic wake off for that stay. Removing a row takes effect only after Save is confirmed.</p></form></section>
-<section class="section divider"><details open><summary>Last published by the TV</summary><p id="publication">No confirmed snapshot yet.</p><ol id="snapshot-list"></ol></details></section>
-<section class="section divider"><h2>TV controls</h2><button class="secondary" id="preview" type="button" disabled>Show the TV</button><p class="note">This wakes the screen and brings the welcome page forward. The picture appears here; it can take about 30 seconds.</p><div id="picture-area" hidden><img id="picture" alt="Picture returned by the lake TV"><p class="note" id="picture-time"></p><button class="secondary" id="close-picture" type="button">Close picture</button></div></section>
+<h1>Shoreline Social House TV Guest Updater</h1>
+<p class="lead">Make sure Tailscale is on to make edits.</p>
+<section id="handoff" class="credentials" hidden><a id="private-link">Open private guest updater</a></section>
+<p id="status" role="status" aria-live="polite">Connecting to guest updaterâ€¦</p><p id="error" role="alert" hidden></p><button class="secondary" id="retry" type="button" hidden>Retry connection</button>
+<div id="editor" hidden>
+<section id="unknown-review" class="credentials" hidden><h2>The previous update is unresolved</h2><p>Owner recovery has reopened editing, but it cannot establish whether your earlier update was applied. The current TV list and your changes are shown below. Acknowledge this uncertainty to review your changes. Saving again requires a separate review and a new Save.</p><button id="acknowledge-unknown" type="button">I understand. Review my changes</button></section>
+<div id="conflict-review" hidden><h2>Review the latest TV stays</h2><p>Your changes are still below. Compare it with the last published list before reapplying the edits you intend to keep.</p><button id="reapply" type="button">Reapply my changes to the saved list</button></div>
+<section class="section"><h2>Guest stays</h2><p class="note">After reopening this page, review the saved guest list before making new changes.</p><form id="form"><div id="stays"></div><p id="empty" class="empty">Guest list hasn't loaded yet.</p><p id="overlap" class="note" hidden></p><div class="toolbar"><button class="secondary" id="add" type="button" disabled>Add a stay</button><button id="save" type="submit" disabled>Save changes</button></div><p id="unsaved-note" class="note" hidden>Unsaved changes stay in this open page until you save.</p><p id="wake-default" class="note">Loading the optional default TV on timeâ€¦</p><p class="note">Leave TV on at check-in blank to keep automatic wake off. Removing a stay takes effect after Save is confirmed.</p></form></section>
+<section class="section divider"><details><summary>Saved guest list</summary><p id="publication">No confirmed snapshot yet.</p><ul id="snapshot-list"></ul></details></section>
+<section class="section divider"><h2>TV controls</h2><button class="secondary" id="preview" type="button" disabled>Wake TV and view screen</button><p class="note">Optional. Wakes the TV and opens the welcome screen. You don't need this to confirm a save. The picture can take about 30 seconds.</p><div id="picture-area" hidden><img id="picture" alt="Picture returned by the TV"><p class="note" id="picture-time"></p><button class="secondary" id="close-picture" type="button">Close picture</button></div></section>
 <section class="section divider"><button class="danger" id="clear" type="button" disabled>Delete all stays</button><p class="note">Removes every booking, including future stays, and the automatic wake schedule after the TV confirms.</p></section>
-</main>
+</div></main>
 <script src="assets/device-state.js?v=12"></script><script src="assets/apply-stay.js?v=12"></script><script src="assets/update-state.js?v=12"></script>
 <script>
 (function(){
   'use strict';
-  const GATEWAY='https://home-mini.tail240fad.ts.net';
+  let GATEWAY='',privateMode=false,booted=false;
   const D=window.SSHDeviceState,U=window.SSHUpdateState,$=id=>document.getElementById(id);
-  let state=U.initialState(),controller=null,credentialValid=false,defaultWake='',rowSerial=0,painted='',problem='',pictureUrl=null,pictureBusy=false,pictureController=null,credentialTimer=null,preparing=null;
+  let state=U.initialState(),controller=null,reading=false,defaultWake='',rowSerial=0,painted='',problem='',pictureUrl=null,pictureBusy=false,pictureController=null,preparing=null;
   // Origin-scoped removal can only remove this page's old credential copy.
   try{localStorage.removeItem('ssh-lake-tv-remote-v1');}catch(_){}
   function dispatch(event){state=U.transition(state,event);render();}
-  function editable(){return credentialValid&&!preparing&&!state.operation&&state.confirmed&&!state.confirmed.readOnly&&!state.confirmed.pending&&['ready','dirty','confirmed'].includes(state.phase);}
-  function errorText(error){return error&&error.name==='AbortError'?'The request timed out.':error&&error.message||'The TV could not be reached.';}
+  function unsaved(){return state.phase==='dirty'||!!state.baseline&&(!state.confirmed||JSON.stringify(state.draft)!==JSON.stringify(state.confirmed.stays));}
+  function editable(){return state.access==='allowed'&&!reading&&!preparing&&!state.operation&&state.confirmed&&!state.confirmed.readOnly&&!state.confirmed.pending&&['ready','dirty','confirmed'].includes(state.phase);}
+  function errorText(){return 'Cannot reach the guest updater. Check Tailscale and your connection, then retry.';}
   function showError(text){problem=text;render();}
+  const stayDateFormat=new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+  function stayDate(value){return stayDateFormat.format(new Date(value+'T12:00:00Z'));}
+  function wakeTime(value){
+    if(!value)return 'TV wake off';
+    const [hour,minute]=value.split(':').map(Number);
+    return 'TV on '+(hour%12||12)+':'+String(minute).padStart(2,'0')+' '+(hour<12?'AM':'PM');
+  }
   function render(){
     $('status').dataset.phase=state.phase;
-    $('status').textContent=state.message||(!$('password').value?'Enter the password to read the TV.':state.phase==='loading'?'Reading the last published TV snapshot…':state.phase==='dirty'?'Unsaved changes':state.phase==='ready'?'Guest list loaded. Edit the draft and save when ready.':'');
+    $('status').textContent=state.access==='checking'?'Connecting to guest updaterâ€¦':state.access==='denied'?'Editing is unavailable. Your changes remain in this open page. An earlier save may still be processing.':state.message||(state.phase==='loading'?'Loading guest listâ€¦':state.phase==='dirty'?'Unsaved changes':state.phase==='ready'?'Guest list loaded.':'');
     $('error').textContent=problem;$('error').hidden=!problem;
-    $('retry').hidden=!$('password').value||(!state.operation&&!['error','read-only','conflict'].includes(state.phase)&&!problem&&!state.message.includes('Automatic retry stopped'));
+    $('retry').hidden=!privateMode||state.access==='checking'||(!state.operation&&state.access!=='denied'&&!['error','read-only','conflict'].includes(state.phase)&&!problem&&!state.message.includes('Automatic retry stopped'));
     const canEdit=editable();for(const id of ['add','save','clear'])$(id).disabled=!canEdit;
-    $('clear').disabled=!canEdit||!state.confirmed.stays.length;$('preview').disabled=!$('password').value||pictureBusy;
+    $('clear').disabled=!canEdit||!state.confirmed.stays.length;$('preview').disabled=state.access!=='allowed'||pictureBusy;
     $('conflict-review').hidden=!['conflict','read-only'].includes(state.phase)||!!state.operation||!state.confirmed||state.confirmed.readOnly;
-    $('reapply').disabled=!credentialValid||!!state.operation||!state.confirmed||state.confirmed.readOnly;
+    $('reapply').disabled=state.access!=='allowed'||!!state.operation||!state.confirmed||state.confirmed.readOnly;
     $('unknown-review').hidden=state.phase!=='unknown-review'||!state.unknownReview;
-    $('acknowledge-unknown').disabled=!credentialValid||state.phase!=='unknown-review';
+    $('acknowledge-unknown').disabled=state.access!=='allowed'||state.phase!=='unknown-review';
     const draftKey=JSON.stringify(state.draft);
     if(draftKey!==painted){painted=draftKey;$('stays').replaceChildren();state.draft.forEach((row,index)=>$('stays').appendChild(makeRow(row,index)));}
     $('empty').hidden=!!state.draft.length;$('stays').querySelectorAll('input,button').forEach(el=>el.disabled=!canEdit);
+    $('empty').textContent=state.confirmed?'No stays added.':"Guest list hasn't loaded yet.";
+    $('unsaved-note').hidden=!unsaved();
+    if(state.confirmed)$('editor').hidden=false;
     const overlap=typeof describeStayOverlap==='function'?describeStayOverlap(state.draft):'';$('overlap').textContent=overlap||'';$('overlap').hidden=!overlap;
     if(state.confirmed){const snapshot=state.confirmed;
-      $('publication').textContent='Published '+new Date(snapshot.publishedAt).toLocaleString()+'. Revision '+snapshot.revision+'. This is the TV publication time, not a live screen check.';
-      $('snapshot-list').replaceChildren();snapshot.stays.forEach(row=>{const item=document.createElement('li');item.textContent=row.name+' · '+row.checkIn+' to '+row.checkOut+' · TV on '+(row.wake||'off');$('snapshot-list').appendChild(item);});
+      $('publication').textContent='Last updated '+new Date(snapshot.publishedAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+      $('snapshot-list').replaceChildren();snapshot.stays.forEach(row=>{const item=document.createElement('li');item.textContent=row.name+' Â· '+stayDate(row.checkIn)+' to '+stayDate(row.checkOut)+' Â· '+wakeTime(row.wake);$('snapshot-list').appendChild(item);});
       if(!snapshot.stays.length){const item=document.createElement('li');item.textContent='No stays';$('snapshot-list').appendChild(item);}
     }else{$('publication').textContent='No usable current snapshot. Read the TV before editing.';$('snapshot-list').replaceChildren();}
   }
   function makeRow(row,index){
     const el=document.createElement('div');el.className='stay';const serial=++rowSerial;
-    [['name','Guest','text'],['checkIn','Check-in','date'],['checkOut','Check-out','date'],['wake','TV on','time']].forEach(([key,label,type])=>{
+    [['name','Guest','text'],['checkIn','Check-in','date'],['checkOut','Check-out','date'],['wake','TV on at check-in','time']].forEach(([key,label,type])=>{
       const wrap=document.createElement('label');wrap.textContent=label;const input=document.createElement('input');input.id='stay-'+serial+'-'+key;input.className='stay-'+({name:'name',checkIn:'in',checkOut:'out',wake:'wake'}[key]);input.type=type;input.value=row[key];input.autocomplete='off';if(key==='wake')input.step='60';wrap.appendChild(input);el.appendChild(wrap);
       input.addEventListener('input',()=>{if(!editable())return;const draft=JSON.parse(JSON.stringify(state.draft));draft[index][key]=input.value;painted=JSON.stringify(draft);dispatch({type:'EDIT',draft});});
     });
@@ -74,13 +86,15 @@
     finally{clearTimeout(timer);external?.removeEventListener('abort',onAbort);}
   }
   const requestJson=(url,options,deadlineMs)=>requestBody(url,options,deadlineMs,'json');
-  function authOptions(signal,body){return {signal,headers:{'X-Fully-Password':$('password').value,...(body?{'Content-Type':'application/json'}:{})},...(body?{method:'POST',body:JSON.stringify(body)}:{})};}
+  function authOptions(signal,body){return {signal,headers:{'X-SSH-Updater':'1',...(body?{'Content-Type':'application/json'}:{})},...(body?{method:'POST',body:JSON.stringify(body)}:{})};}
+  function denyAccess(){preparing=null;reading=false;controller?.abort();pictureController?.abort();dispatch({type:'ACCESS_CHECK_START'});dispatch({type:'ACCESS_DENIED',generation:state.generation});}
   function active(generation,signal){return generation===state.generation&&!signal.aborted;}
   function handleReply(reply,generation){
     if(generation!==state.generation)return false;const body=reply.body||{},op=state.operation;
+    if([401,403].includes(reply.status)){denyAccess();return false;}
     if(reply.status===409&&body.code==='UNKNOWN_PRE_RECOVERY'){
       dispatch({type:'UNKNOWN_OUTCOME',generation,body});
-      if(state.phase==='unknown-review'){credentialValid=true;problem='';render();}
+      if(state.phase==='unknown-review'){problem='';render();}
       else showError('The previous update remains unknown. Owner recovery and a fresh current TV list are required before review.');
       return false;
     }
@@ -108,7 +122,7 @@
           else{reply=await requestJson(GATEWAY+op.statusUri,authOptions(signal),Math.min(8000,end-Date.now()));if(active(generation,signal)&&reply.status===404&&allowResubmit&&!resubmitted&&op.request&&op.admission==='unknown'){resubmitted=true;reply=await requestJson(GATEWAY+'/ssh-stays',authOptions(signal,{...op.request,retry:true,expiresAt:null}),Math.min(8000,end-Date.now()));}}
           if(!active(generation,signal))return;if(handleReply(reply,generation))return;if([400,401,403,405,413,415,422].includes(reply.status)||['read-only','unknown-review'].includes(state.phase))return;
         }else{const reply=await requestJson(GATEWAY+'/ssh-stays',authOptions(signal),Math.min(8000,end-Date.now()));if(!active(generation,signal))return;
-          if(reply.status===200){if(!U.validateSnapshot(reply.body).ok){dispatch({type:'RECOVERY_REQUIRED',generation});showError('The TV snapshot is unreadable. Editing is disabled.');return;}credentialValid=true;problem='';dispatch({type:'READ_OK',generation,snapshot:reply.body});if(!state.operation)return;}
+          if(reply.status===200){if(!U.validateSnapshot(reply.body).ok){dispatch({type:'RECOVERY_REQUIRED',generation});showError('The TV snapshot is unreadable. Editing is disabled.');return;}problem='';dispatch({type:'READ_OK',generation,snapshot:reply.body});if(!state.operation)return;}
           else{handleReply(reply,generation);if(reply.status<500)return;}
         }
       }catch(error){if(!active(generation,signal))return;problem=errorText(error);render();}
@@ -116,7 +130,17 @@
     }
     if(active(generation,signal))dispatch({type:state.operation?'TIMEOUT':'READ_FAILED',generation,exhausted:true});
   }
-  function startRead(type='READ_START',allowResubmit=false){preparing=null;controller?.abort();controller=new AbortController();problem='';dispatch({type});if(!$('password').value){credentialValid=false;render();return;}void readLoop(state.generation,controller.signal,Date.now()+30000,allowResubmit);}
+  async function startRead(type='READ_START',allowResubmit=false){
+    if(!booted||!privateMode)return;
+    preparing=null;reading=true;controller?.abort();pictureController?.abort();controller=new AbortController();problem='';dispatch({type:'ACCESS_CHECK_START'});
+    const generation=state.generation,signal=controller.signal;
+    try{const reply=await requestJson(GATEWAY+'/ssh-updater/session',authOptions(signal));if(!active(generation,signal))return;
+      if([401,403].includes(reply.status)){denyAccess();return;}
+      if(reply.status!==200||reply.body?.authorized!==true||reply.body?.protocol!==2)throw Error();
+      dispatch({type:'ACCESS_ALLOWED',generation});await readLoop(generation,signal,Date.now()+30000,allowResubmit);
+    }catch(error){if(active(generation,signal)){dispatch({type:'ACCESS_DENIED',generation});showError(errorText(error));}}
+    finally{if(generation===state.generation){reading=false;render();}}
+  }
   async function submit(kind){
     if(!editable())return;problem='';
     const request={protocol:2,operationId:crypto.randomUUID(),deviceEpoch:state.baseline.deviceEpoch,expectedRevision:state.baseline.revision,kind,payload:kind==='delete-all-stays'?{}:{stays:state.draft.map(row=>({...row}))}};
@@ -132,9 +156,9 @@
   $('form').addEventListener('submit',event=>{event.preventDefault();void submit('replace-stays');});
   $('add').addEventListener('click',()=>{if(!editable())return;dispatch({type:'EDIT',draft:[...state.draft,{name:'',checkIn:'',checkOut:'',wake:defaultWake}]});$('stays').lastElementChild.querySelector('input').focus();});
   $('clear').addEventListener('click',()=>{if(!editable())return;const count=state.confirmed.stays.length;if(confirm('Delete all '+count+' '+(count===1?'stay':'stays')+', including future bookings, and remove automatic TV wakes?'))void submit('delete-all-stays');});
-  $('connect').addEventListener('click',()=>startRead());$('retry').addEventListener('click',()=>startRead('RETRY',true));
+  $('retry').addEventListener('click',()=>startRead('RETRY',true));
   $('acknowledge-unknown').addEventListener('click',()=>{
-    if(!credentialValid||state.phase!=='unknown-review'||!state.operation||!state.unknownReview)return;
+    if(state.access!=='allowed'||state.phase!=='unknown-review'||!state.operation||!state.unknownReview)return;
     try{
       const next=U.transition(state,{type:'ACKNOWLEDGE_UNKNOWN'}),key='ssh-lake-tv-unknown-ack-v1';
       const record={...state.unknownReview,requestHash:state.operation.requestHash,outcome:'unknown',acknowledgedAt:Date.now()};
@@ -145,14 +169,22 @@
       state=next;problem='';render();$('reapply').focus();
     }catch(_){showError('Your acknowledgment could not be recorded in this tab. The original update is still retained.');}
   });
-  $('reapply').addEventListener('click',()=>{if(!credentialValid)return;try{dispatch({type:'REAPPLY'});problem='';render();}catch(error){showError(errorText(error));}});
-  $('password').addEventListener('input',()=>{credentialValid=false;controller?.abort();pictureController?.abort();clearTimeout(credentialTimer);dispatch({type:'READ_START'});credentialTimer=setTimeout(()=>startRead(),300);});
-  window.addEventListener('pageshow',()=>startRead('PAGE_SHOW'));
+  $('reapply').addEventListener('click',()=>{if(state.access!=='allowed')return;try{dispatch({type:'REAPPLY'});problem='';render();}catch(error){showError(errorText(error));}});
+  window.addEventListener('pageshow',event=>{if(event.persisted)void startRead('PAGE_SHOW');});
   function closePicture(){if(pictureUrl)URL.revokeObjectURL(pictureUrl);pictureUrl=null;$('picture').removeAttribute('src');$('picture-area').hidden=true;}
   $('close-picture').addEventListener('click',closePicture);
-  $('preview').addEventListener('click',async()=>{if(pictureBusy||!$('password').value)return;pictureBusy=true;pictureController=new AbortController();render();try{const reply=await requestBody(GATEWAY+'/ssh-tv/picture',authOptions(pictureController.signal,{}),35000,'blob');if(pictureController.signal.aborted)return;if(reply.status!==200)throw Error('The TV picture could not be retrieved.');closePicture();pictureUrl=URL.createObjectURL(reply.body);$('picture').src=pictureUrl;$('picture-time').textContent='Picture received '+new Date().toLocaleTimeString()+'.';$('picture-area').hidden=false;}catch(error){if(!pictureController.signal.aborted)showError(errorText(error));}finally{pictureBusy=false;render();}});
+  $('preview').addEventListener('click',async()=>{if(pictureBusy||state.access!=='allowed')return;pictureBusy=true;pictureController=new AbortController();const pictureSignal=pictureController.signal;render();try{const reply=await requestBody(GATEWAY+'/ssh-tv/picture',authOptions(pictureSignal,{}),35000,'blob');if(pictureSignal.aborted)return;if([401,403].includes(reply.status)){denyAccess();return;}if(reply.status!==200)throw Error('The TV picture could not be retrieved.');closePicture();pictureUrl=URL.createObjectURL(reply.body);$('picture').src=pictureUrl;$('picture-time').textContent='Picture received '+new Date().toLocaleTimeString()+'.';$('picture-area').hidden=false;}catch(error){if(!pictureSignal.aborted)showError('The picture could not be retrieved. This does not change your saved guest list.');}finally{pictureBusy=false;render();}});
   window.addEventListener('pagehide',()=>{preparing=null;controller?.abort();pictureController?.abort();closePicture();});
-  void requestJson('config.json',{},3000).then(reply=>{const value=reply.status===200&&reply.body&&reply.body.houseRules&&reply.body.houseRules.checkInTime;const match=typeof value==='string'&&/^(1[0-2]|[1-9]):([0-5]\d) (AM|PM)$/.exec(value);if(!match)throw Error('Default unavailable');const hour=Number(match[1])%12+(match[3]==='PM'?12:0);defaultWake=String(hour).padStart(2,'0')+':'+match[2];$('wake-default').textContent='New stays default to '+value+' at the house. You can change or clear the time.';}).catch(()=>{$('wake-default').textContent='Default TV on time is unavailable. New stays leave it blank until you choose one.';});
+  window.addEventListener('beforeunload',event=>{if(unsaved()||state.operation||preparing){event.preventDefault();event.returnValue='';}});
+  void requestJson('config.json',{},3000).then(reply=>{
+    const config=reply.status===200&&reply.body,updater=config?.guestUpdater;
+    if(!updater||new URL(updater.origin).origin!==updater.origin||new URL(updater.origin).protocol!=='https:'||updater.path!=='/ssh-updater/')throw Error();
+    const value=config.houseRules?.checkInTime,match=typeof value==='string'&&/^(1[0-2]|[1-9]):([0-5]\d) (AM|PM)$/.exec(value);
+    if(match){const hour=Number(match[1])%12+(match[3]==='PM'?12:0);defaultWake=String(hour).padStart(2,'0')+':'+match[2];$('wake-default').textContent='New stays default to '+value+' at the house. You can change or clear the time.';}
+    else $('wake-default').textContent='Default TV on time is unavailable. New stays leave it blank until you choose one.';
+    if(location.origin!==updater.origin){$('handoff').hidden=false;$('private-link').href=updater.origin+updater.path;$('status').textContent='Open the private page to edit guest stays.';return;}
+    GATEWAY=location.origin;privateMode=true;booted=true;void startRead();
+  }).catch(()=>{$('status').textContent='The guest updater address is unavailable. Please reload the page.';});
   render();
 })();
 </script></body></html>

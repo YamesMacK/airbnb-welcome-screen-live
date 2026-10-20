@@ -43,7 +43,7 @@
       return {ok:true,value:{...copy(s),pending:s.pending===undefined?null:copy(s.pending)}};
     }catch(_){return {ok:false};}
   }
-  function initialState(){return {phase:'loading',generation:0,confirmed:null,draft:[],baseline:null,operation:null,unknownReview:null,message:''};}
+  function initialState(){return {access:'checking',phase:'loading',generation:0,confirmed:null,draft:[],baseline:null,operation:null,unknownReview:null,message:''};}
   function unknownResolutionMatches(state,body){
     const op=state.operation,r=body&&body.resolution,checked=validateSnapshot(body&&body.snapshot);
     return !!(op&&(op.request||op.admission==='accepted')&&body.code==='UNKNOWN_PRE_RECOVERY'&&body.operationId===op.operationId&&
@@ -59,12 +59,12 @@
       r.expiresAt===op.expiresAt&&r.deviceEpoch===(op.deviceEpoch||(op.request?op.request.deviceEpoch:state.baseline&&state.baseline.deviceEpoch)));
   }
   function resultMessage(r,snapshot){
-    if(!snapshot)return 'Stays saved; automatic TV wake could not be confirmed';
-    if(snapshot.revision!==r.appliedRevision)return 'Your change was saved; a later change is now on the TV';
+    if(!snapshot)return 'Guest list saved. Automatic TV-on time could not be confirmed.';
+    if(snapshot.revision!==r.appliedRevision)return 'Your changes were saved. Newer changes are now on the TV.';
     const w=snapshot.wake;
-    if(w.revision!==r.appliedRevision||['unconfirmed','error'].includes(w.state))return 'Stays saved; automatic TV wake could not be confirmed';
-    if(w.state==='deferred')return 'Saved; wake is deferred until the welcome page runs within six days';
-    return 'Stays saved';
+    if(w.revision!==r.appliedRevision||['unconfirmed','error'].includes(w.state))return 'Guest list saved. Automatic TV-on time could not be confirmed.';
+    if(w.state==='deferred')return 'Guest list saved. Automatic TV-on time will be scheduled closer to check-in.';
+    return 'Guest list saved.';
   }
   function transition(state,event){
     const s=state||initialState(),e=event||{};
@@ -73,6 +73,9 @@
     if(e.operationId&&op&&e.operationId!==op.operationId)return s;
     if(e.requestHash&&op&&e.requestHash!==op.requestHash)return s;
     switch(e.type){
+      case 'ACCESS_CHECK_START': return {...s,generation:s.generation+1,access:'checking'};
+      case 'ACCESS_ALLOWED': return {...s,access:'allowed'};
+      case 'ACCESS_DENIED': return {...s,access:'denied'};
       case 'READ_START':
       case 'PAGE_SHOW':
         return {...s,generation:s.generation+1,unknownReview:null,phase:op?(s.phase==='read-only'?'read-only':'verifying'):
@@ -83,13 +86,13 @@
         const snapshot=checked.value;
         let operation=op;
         const keepDraft=!!op||!!s.baseline&&['dirty','conflict','read-only','unconfirmed'].includes(s.phase);
-        if(!operation&&snapshot.pending)operation={...snapshot.pending,deviceEpoch:snapshot.deviceEpoch,request:null,submitted:!keepDraft,admission:'accepted'};
+        if(!operation&&snapshot.pending)operation={...snapshot.pending,deviceEpoch:snapshot.deviceEpoch,request:null,submitted:false,observedOnly:!keepDraft,admission:'accepted'};
         const epochChanged=!!s.baseline&&snapshot.deviceEpoch!==s.baseline.deviceEpoch;
         const baseline=keepDraft?s.baseline:{deviceEpoch:snapshot.deviceEpoch,revision:snapshot.revision};
         return {...s,confirmed:snapshot,baseline,operation,draft:keepDraft?s.draft:copy(snapshot.stays),
           phase:snapshot.readOnly||(epochChanged&&keepDraft)?'read-only':operation?(s.phase==='unconfirmed'?'unconfirmed':'pending'):keepDraft?s.phase:'ready',
           message:snapshot.readOnly?'The TV is read-only. Owner resolution is required.':
-            epochChanged&&keepDraft?'The TV identity changed. Review it before reapplying this draft.':operation?'Queued; waiting for the TV to confirm':keepDraft?s.message:''};
+            epochChanged&&keepDraft?'The TV identity changed. Review it before reapplying these changes.':operation?'Waiting for the TV to confirm. You can leave the screen off.':keepDraft?s.message:''};
       }
       case 'READ_FAILED':
         return {...s,phase:['read-only','unconfirmed','conflict'].includes(s.phase)?s.phase:op?(op.admission==='accepted'?'pending':s.phase):s.phase==='dirty'?'dirty':'error',
@@ -106,43 +109,43 @@
           request.deviceEpoch!==s.baseline.deviceEpoch||request.expectedRevision!==s.baseline.revision||
           !D.validateSubmission({...request,retry:false,expiresAt:null}).ok||!digest.test(e.requestHash))throw new Error('Invalid submission');
         return {...s,phase:'sending',operation:{operationId:request.operationId,deviceEpoch:request.deviceEpoch,request:copy(request),requestHash:e.requestHash,
-          expiresAt:null,statusUri:'/ssh-stays/operations/'+request.operationId,submitted:true,admission:'unknown'},message:'Sending the update'};
+          expiresAt:null,statusUri:'/ssh-stays/operations/'+request.operationId,submitted:true,admission:'unknown'},message:'Sending changesâ€¦'};
       }
       case 'ADMITTED':
         if(!op||e.operationId!==op.operationId||e.requestHash!==op.requestHash||e.expiresAt!==op.expiresAt||
           e.statusUri!=='/ssh-stays/operations/'+op.operationId)return s;
-        return {...s,phase:['read-only','unconfirmed'].includes(s.phase)?s.phase:'pending',operation:{...op,admission:'accepted',statusUri:e.statusUri},message:'Queued; waiting for the TV to confirm'};
+        return {...s,phase:['read-only','unconfirmed'].includes(s.phase)?s.phase:'pending',operation:{...op,admission:'accepted',statusUri:e.statusUri},message:'Waiting for the TV to confirm. You can leave the screen off.'};
       case 'PENDING':
         if(!op)return s;
-        return {...s,phase:['read-only','unconfirmed'].includes(s.phase)?s.phase:'pending',message:'Queued; waiting for the TV to confirm'};
+        return {...s,phase:['read-only','unconfirmed'].includes(s.phase)?s.phase:'pending',message:'Waiting for the TV to confirm. You can leave the screen off.'};
       case 'UNCONFIRMED':
         if(!op)return s;
         return {...s,phase:s.phase==='read-only'?'read-only':'unconfirmed',message:'The update could not be confirmed. Retry checks the same update.'};
       case 'TIMEOUT':
         if(!op)return {...s,phase:s.phase==='dirty'?'dirty':'error',message:'Automatic retry stopped'};
         return {...s,phase:['read-only','unconfirmed'].includes(s.phase)?s.phase:op.admission==='accepted'?'pending':'verifying',
-          message:op.admission==='accepted'?'Queued; waiting for the TV to confirm. Automatic retry stopped.':'The update could not be confirmed. Automatic retry stopped.'};
+          message:op.admission==='accepted'?'Waiting for the TV to confirm. You can leave the screen off. Automatic retry stopped.':'The update could not be confirmed. Automatic retry stopped.'};
       case 'BUSY':
-        if(!op)return {...s,message:'Another update is waiting for the TV. Your draft is preserved.'};
+        if(!op)return {...s,message:'Another update is waiting for the TV. Your changes are preserved.'};
         if(e.admitted===false&&e.operationId===op.operationId&&op.admission==='unknown'&&s.phase==='sending')
-          return {...s,phase:'error',operation:{...op,admission:'rejected'},message:e.code==='STORE_WRITE_FAILED'?'The gateway could not store this update. It was not admitted. Retry keeps the same draft and operation.':'Another update is waiting for the TV. Your draft is preserved. Retry when it finishes.'};
+          return {...s,phase:'error',operation:{...op,admission:'rejected'},message:e.code==='STORE_WRITE_FAILED'?'The gateway could not store this update. It was not admitted. Retry keeps the same changes and operation.':'Another update is waiting for the TV. Your changes are preserved. Retry when it finishes.'};
         return {...s,message:'The TV has another pending update. This update still needs reconciliation.'};
       case 'NOT_APPLIED':
         return op?{...s,phase:['read-only','unconfirmed'].includes(s.phase)?s.phase:op.admission==='accepted'?'pending':s.phase,message:'The TV was busy. Retry checks this same update.'}:s;
       case 'UNKNOWN_OUTCOME':
         if(!unknownResolutionMatches(s,e.body))return s;
         return {...s,phase:'unknown-review',confirmed:validateSnapshot(e.body.snapshot).value,unknownReview:copy(e.body.resolution),
-          message:'Owner recovery is complete. The previous update outcome is still unknown. Compare the current TV list with your preserved draft.'};
+          message:'Owner recovery is complete. The previous update outcome is still unknown. Compare the current TV list with your preserved changes.'};
       case 'ACKNOWLEDGE_UNKNOWN':
         if(s.phase!=='unknown-review'||!s.unknownReview||!unknownResolutionMatches(s,{code:'UNKNOWN_PRE_RECOVERY',operationId:op&&op.operationId,acceptance:'unknown',outcome:'unknown',resolution:s.unknownReview,snapshot:s.confirmed}))
           throw new Error('Completed recovery and current-state review are required');
         return {...s,phase:'conflict',operation:null,unknownReview:null,
           message:'The previous update outcome remains unknown. Review the current stays, then explicitly reapply and save any edits you still intend.'};
       case 'RECOVERY_REQUIRED':
-        return {...s,phase:'read-only',confirmed:null,unknownReview:null,message:'Owner resolution is required. Your draft and pending update are preserved.'};
+        return {...s,phase:'read-only',confirmed:null,unknownReview:null,message:'Owner resolution is required. Your changes and pending update are preserved.'};
       case 'EPOCH_CONFLICT':
         if(e.receipt&&receiptMatches(s,e.receipt)&&e.receipt.outcome==='conflict'&&e.receipt.reason==='EPOCH_CONFLICT')
-          return {...s,phase:'read-only',operation:null,confirmed:null,message:'The TV identity changed. Review the current TV before reapplying your draft.'};
+          return {...s,phase:'read-only',operation:null,confirmed:null,message:'The TV identity changed. Review the current TV before reapplying your changes.'};
         return {...s,phase:'read-only',confirmed:null,message:'The TV identity changed. Your pending update must be reconciled.'};
       case 'CONFLICT':
       case 'EXPIRED':
@@ -152,19 +155,22 @@
         if(e.type==='RECEIPT'&&r.outcome!=='committed'||e.type==='CONFLICT'&&(r.outcome!=='conflict'||r.reason!=='REVISION_CONFLICT')||
           e.type==='EXPIRED'&&r.outcome!=='expired')return s;
         const checked=validateSnapshot(e.snapshot),snapshot=checked.ok?checked.value:null;
+        if(op.observedOnly&&snapshot&&!snapshot.readOnly&&!snapshot.pending&&snapshot.deviceEpoch===r.deviceEpoch)
+          return {...s,phase:'ready',operation:null,confirmed:snapshot,draft:copy(snapshot.stays),baseline:{deviceEpoch:snapshot.deviceEpoch,revision:snapshot.revision},message:'Pending update finished. Guest list loaded.'};
         if(r.outcome!=='committed')return {...s,phase:'conflict',operation:null,confirmed:snapshot,
-          message:r.outcome==='expired'?'This update expired. Review the current TV before making a new save.':'The TV changed since this draft was opened. Review the current stays, then reapply your intended edits.'};
+          message:r.outcome==='expired'?'This update expired. Review the current TV before making a new save.':'The TV changed since these changes was opened. Review the current stays, then reapply your intended edits.'};
         if(!snapshot||snapshot.readOnly||snapshot.deviceEpoch!==r.deviceEpoch||snapshot.pending)
           return {...s,phase:'read-only',operation:null,confirmed:snapshot,draft:s.draft,
             message:resultMessage(r,snapshot)+'. Read and review the current TV before editing again.'};
         if(op.submitted===false)return {...s,phase:'conflict',operation:null,confirmed:snapshot,
-          message:'The queued update was saved. Your separate draft is preserved. Review the current stays before reapplying it.'};
+          message:'The queued update was saved. Your separate changes are preserved. Review the current stays before reapplying it.'};
+        if(snapshot.revision!==r.appliedRevision)return {...s,phase:'conflict',operation:null,confirmed:snapshot,message:resultMessage(r,snapshot)};
         return {...s,phase:'confirmed',operation:null,confirmed:snapshot||s.confirmed,draft:snapshot?copy(snapshot.stays):s.draft,
           baseline:snapshot?{deviceEpoch:snapshot.deviceEpoch,revision:snapshot.revision}:s.baseline,message:resultMessage(r,snapshot)};
       }
       case 'REAPPLY':
         if(op||!s.confirmed||s.confirmed.readOnly||s.confirmed.pending||!['conflict','read-only'].includes(s.phase))throw new Error('Current snapshot review is required');
-        return {...s,phase:'dirty',baseline:{deviceEpoch:s.confirmed.deviceEpoch,revision:s.confirmed.revision},message:'Draft reapplied. Review it and save explicitly.'};
+        return {...s,phase:'dirty',baseline:{deviceEpoch:s.confirmed.deviceEpoch,revision:s.confirmed.revision},message:'Changes reapplied. Review it and save explicitly.'};
       case 'RETRY':
         return {...s,generation:s.generation+1,unknownReview:null,phase:s.phase==='read-only'?'read-only':op?'verifying':['dirty','conflict'].includes(s.phase)?s.phase:'loading',message:op?'Checking the same update':'Retrying the TV snapshot'};
       default: throw new Error('Unknown updater event');

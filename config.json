@@ -1,4 +1,5 @@
 {
+  "guestUpdater": {"origin": "https://home-mini.tail240fad.ts.net:8443", "path": "/ssh-updater/"},
   "_comment": "SAFE TRACKED FALLBACK. Keep guest names/dates, Wi-Fi credentials, street address, and host contact details in same-origin device storage via ?setup, never in this file.",
 
   "guest": {
@@ -105,18 +106,18 @@
     "mapUrl": "https://www.google.com/maps/search/restaurants+%26+things+to+do/@30.41,-95.59,13z",
     "intro": "Scan to explore the area on your phone",
     "picks": [
-      { "name": "Monty's Lighthouse", "note": "Cajun seafood + Lake Conroe views · 12 min" },
-      { "name": "Papa's on the Lake", "note": "Lakeside seafood, live music, pool · 12 min" },
-      { "name": "Fajita Jack's", "note": "Lakeside Tex-Mex with a boat slip · 10 min" },
-      { "name": "Bar-A-BBQ", "note": "Texas Monthly Top 50 brisket · 12 min" },
-      { "name": "The Pizza Shack", "note": "Local pizza staple since 1985 · 10 min" },
-      { "name": "PJ's Coffee", "note": "Lakeside drive-thru, cold brew + beignets · 8 min" },
-      { "name": "Kroger Marketplace", "note": "Full grocery, pharmacy + fuel · 12 min" },
-      { "name": "April Plaza Marina", "note": "Pontoon + Sea-Doo rentals · 10 min" },
-      { "name": "Lake Conroe Park", "note": "Biggest beach on the lake, swimming · 12 min" },
-      { "name": "Historic Downtown Montgomery", "note": "Walkable 1800s shops + dining · 15 min" },
-      { "name": "Bernhardt Winery", "note": "Sunday sunset lawn concerts · 25 min" },
-      { "name": "Bar Lago", "note": "Lakeside cocktails + live music · 12 min" }
+      { "name": "Monty's Lighthouse", "note": "Cajun seafood + Lake Conroe views Â· 12 min" },
+      { "name": "Papa's on the Lake", "note": "Lakeside seafood, live music, pool Â· 12 min" },
+      { "name": "Fajita Jack's", "note": "Lakeside Tex-Mex with a boat slip Â· 10 min" },
+      { "name": "Bar-A-BBQ", "note": "Texas Monthly Top 50 brisket Â· 12 min" },
+      { "name": "The Pizza Shack", "note": "Local pizza staple since 1985 Â· 10 min" },
+      { "name": "PJ's Coffee", "note": "Lakeside drive-thru, cold brew + beignets Â· 8 min" },
+      { "name": "Kroger Marketplace", "note": "Full grocery, pharmacy + fuel Â· 12 min" },
+      { "name": "April Plaza Marina", "note": "Pontoon + Sea-Doo rentals Â· 10 min" },
+      { "name": "Lake Conroe Park", "note": "Biggest beach on the lake, swimming Â· 12 min" },
+      { "name": "Historic Downtown Montgomery", "note": "Walkable 1800s shops + dining Â· 15 min" },
+      { "name": "Bernhardt Winery", "note": "Sunday sunset lawn concerts Â· 25 min" },
+      { "name": "Bar Lago", "note": "Lakeside cocktails + live music Â· 12 min" }
     ],
     "walden": {
       "_comment": "Around Walden block on Local Favorites. Public amenities page URL; key-card return itself lives on the About checkout list.",
