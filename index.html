@@ -491,8 +491,8 @@
 </main>
 
 <script src="assets/qrcode.min.js"></script>
-<script src="assets/device-state.js?v=12"></script>
-<script src="assets/apply-stay.js?v=12"></script>
+<script src="assets/device-state.js?v=13"></script>
+<script src="assets/apply-stay.js?v=13"></script>
 <script>
 (function(){
   "use strict";
@@ -1407,6 +1407,10 @@
     setupValue('setupWifiPassword',wifi.password);
     setupValue('setupEncryption',canonicalWifiEncryption(wifi.encryption||'WPA',typeof wifi.password==='string'?wifi.password:'',[]));
     setupValue('setupAddress',safety.address);
+    if(deviceIO.managedGuests()){
+      ['setupGuestName','setupCheckIn','setupCheckOut','setupClear'].forEach(function(id){document.getElementById(id).disabled=true;});
+      showSetupAlert('Guest stays are saved through the private guest updater. Wi-Fi and address remain editable here.',false);
+    }
     syncSetupPassword();
     if(stored.error)showSetupAlert(stored.error,false);
     document.getElementById('setupEncryption').addEventListener('change',syncSetupPassword);
@@ -1461,6 +1465,7 @@
     var value={wifi:{ssid:ssid,password:password,encryption:encryption},
       safety:{address:document.getElementById('setupAddress').value.trim(),hostName:setupBaseline.safety.hostName,hostPhone:setupBaseline.safety.hostPhone},
       stayEdit:{index:index,stay:hasStay?{name:guestName,checkIn:checkIn,checkOut:checkOut,wake:previous?previous.wake:''}:null}};
+    if(deviceIO.managedGuests())value.stayEdit={index:null,stay:null};
     submitSetupCommand('setup',value);
   }
   async function submitSetupCommand(kind,payload){

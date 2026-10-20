@@ -210,6 +210,9 @@
       let remote=false;
       try{const envelope=io.remoteCommand();remote=keys(envelope,['command','requestHash'])&&envelope.requestHash===requestHash&&canonicalCommand(envelope.command)===bytes;}catch(_){return transient(id,'read-only','MAILBOX_UNREADABLE');}
       if(command.expiresAt===null&&!remote)return transient(id,'invalid','REMOTE_COMMAND_REQUIRED');
+      // Managed guest authority permits only the coordinator mailbox to change
+      // stays. Private Wi-Fi/contact setup can still use the local transaction.
+      if(io.managedGuests&&io.managedGuests()&&!remote&&!(command.kind==='setup'&&command.payload.stayEdit.index===null&&command.payload.stayEdit.stay===null))return transient(id,'read-only','HOST_GUEST_AUTHORITY');
       if(record.pinnedOperationId!==null&&record.pinnedOperationId!==id&&remote)return transient(id,'not-applied','MAILBOX_BUSY');
       let reduced;
       try{reduced=reduceCommand(record,command,{now:io.now(),nextRevision:io.newRevision(),requestHash});}catch(_){return transient(id,'invalid','INVALID_CHANGE');}
@@ -242,7 +245,8 @@
     const compatible=documentOwner.mode===writerMode&&documentOwner.baseUrl===baseUrl;
     const io={fully,baseUrl,writerMode,storage:globalThis.localStorage,now:()=>Date.now(),newRevision:()=>globalThis.crypto.randomUUID(),
       sha256Utf8:async text=>Array.from(new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),b=>b.toString(16).padStart(2,'0')).join(''),
-      authority(){try{const a=JSON.parse(fully.getStringSetting('sshActiveOriginV2'));return keys(a,['protocol','deviceEpoch','mode','baseUrl','transferId'])&&a.protocol===2&&uuid(a.deviceEpoch)&&['active','holding'].includes(a.mode)&&a.baseUrl===baseUrl&&(a.mode==='active'?a.transferId===null:uuid(a.transferId))?a:null;}catch(_){return null;}},
+      managedGuests(){try{const a=JSON.parse(fully.getStringSetting('sshActiveOriginV2'));return keys(a,['protocol','deviceEpoch','mode','baseUrl','transferId'])&&a.protocol===2&&uuid(a.deviceEpoch)&&a.mode==='managed'&&a.baseUrl===baseUrl&&uuid(a.transferId)?a:null;}catch(_){return null;}},
+      authority(){try{const managed=io.managedGuests();if(managed)return {...managed,mode:'active',transferId:null};const a=JSON.parse(fully.getStringSetting('sshActiveOriginV2'));return keys(a,['protocol','deviceEpoch','mode','baseUrl','transferId'])&&a.protocol===2&&uuid(a.deviceEpoch)&&['active','holding'].includes(a.mode)&&a.baseUrl===baseUrl&&(a.mode==='active'?a.transferId===null:uuid(a.transferId))?a:null;}catch(_){return null;}},
       remoteCommand(){const raw=fully.getStringSetting('sshStayCommandV2');if(!raw)return null;const envelope=JSON.parse(raw);if(!keys(envelope,['command','requestHash'])||!validateCommand(envelope.command).ok||!HASH.test(envelope.requestHash))throw TypeError('Invalid mailbox');return envelope;},
       readRecord:()=>readRecord(io),writeRecord:record=>writeRecord(io,record),checkAuthority:(record,mode='active',transferId=null)=>authorityMatches(io,record,mode,transferId),
       withTransaction(operationId,callback){

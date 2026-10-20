@@ -146,6 +146,16 @@ async function publishDeviceResult(io,key,value,ownerId){
 async function processDeviceMailboxes(io){
   var result={outcome:'idle'};
   try{
+    if(io.managedGuests){
+      var managed=io.managedGuests();
+      if(managed){
+        var fenced=await io.withTransaction('guest-authority',function(){
+          var record=io.readRecord(),current=io.managedGuests();
+          return current&&current.transferId===managed.transferId&&io.checkAuthority(record)&&record.deviceEpoch===managed.deviceEpoch&&writeSetting(io.fully,'sshGuestAuthorityV1',{version:1,storeId:managed.transferId,deviceEpoch:record.deviceEpoch});
+        });
+        if(!fenced)return {outcome:'read-only',code:'GUEST_FENCE_UNCONFIRMED'};
+      }
+    }
     var ack=mailboxValue(io.fully,'sshStayAckV2');
     if(ack){var acknowledged=await State.acknowledgeReceipt(ack,io);result=acknowledged;
       if(acknowledged.acknowledged)result.publicationStatus=await publishDeviceResult(io,'sshStayAckResultV2',{protocol:2,...acknowledged});
